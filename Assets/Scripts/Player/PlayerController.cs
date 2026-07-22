@@ -1,4 +1,6 @@
 using System.Collections;
+using Unity.Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,7 +10,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionAsset _inputActionObj;
 
     [Header("Camera")]
-    [SerializeField] private Camera mainCamera;
+    [SerializeField] private Camera _mainCamera;
+    [SerializeField] private CinemachineCamera _playerCamera;
+    [SerializeField] private float _scopedFOV;
     [SerializeField] private Transform _cameraPivot;
     [SerializeField] private float _sensitivityX;
     [SerializeField] private float _sensitivityY;
@@ -26,9 +30,9 @@ public class PlayerController : MonoBehaviour
     private float _yaw;
     private float _pitch;
     private bool isScoped = false;
+    private float _normalFOV;
 
     private int playerGunLayerMask;
-
 
     private void OnEnable()
     {
@@ -89,13 +93,16 @@ public class PlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(_scopeDuration);
         _scopeOverlay.SetActive(true);
-        mainCamera.cullingMask &= ~playerGunLayerMask;
+        _mainCamera.cullingMask &= ~playerGunLayerMask;
+        _normalFOV = _playerCamera.Lens.FieldOfView;
+        _playerCamera.Lens.FieldOfView = _scopedFOV;
     }
 
     private void OnExitScope()
     {
         _scopeOverlay.SetActive(false);
-        mainCamera.cullingMask |= playerGunLayerMask;
+        _mainCamera.cullingMask |= playerGunLayerMask;
+        _playerCamera.Lens.FieldOfView = _normalFOV;
     }
 
 
