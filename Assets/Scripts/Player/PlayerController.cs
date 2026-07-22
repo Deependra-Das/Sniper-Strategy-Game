@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionAsset _inputActionObj;
 
     [Header("Camera")]
+    [SerializeField] private Camera mainCamera;
     [SerializeField] private Transform _cameraPivot;
     [SerializeField] private float _sensitivityX;
     [SerializeField] private float _sensitivityY;
@@ -15,6 +17,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Gun")]
     [SerializeField] private Animator _playerGunAnimator;
+    [SerializeField] private GameObject _scopeOverlay;
+    [SerializeField] private float _scopeDuration;
 
     private InputAction m_lookAction;
     private InputAction m_scopeAction;
@@ -22,6 +26,9 @@ public class PlayerController : MonoBehaviour
     private float _yaw;
     private float _pitch;
     private bool isScoped = false;
+
+    private int playerGunLayerMask;
+
 
     private void OnEnable()
     {
@@ -39,17 +46,13 @@ public class PlayerController : MonoBehaviour
         m_scopeAction = InputSystem.actions.FindAction("Scope");
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
     }
 
     private void Update()
     {
         Look();
-
-        if(m_scopeAction.WasPressedThisFrame())
-        {
-            isScoped = !isScoped;
-            _playerGunAnimator.SetBool("isScoped", isScoped);
-        }
+        HandleGunInput();
     }
 
     private void Look()
@@ -62,6 +65,37 @@ public class PlayerController : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
         _cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+    }
+
+    private void HandleGunInput()
+    {
+        if (m_scopeAction.WasPressedThisFrame())
+        {
+            isScoped = !isScoped;
+            _playerGunAnimator.SetBool("isScoped", isScoped);
+
+            if(isScoped)
+            {
+                StartCoroutine(OnEnterScope());
+            }
+            else
+            {
+                OnExitScope();
+            }
+        }
+    }
+
+    private IEnumerator OnEnterScope()
+    {
+        yield return new WaitForSeconds(_scopeDuration);
+        _scopeOverlay.SetActive(true);
+        mainCamera.cullingMask &= ~playerGunLayerMask;
+    }
+
+    private void OnExitScope()
+    {
+        _scopeOverlay.SetActive(false);
+        mainCamera.cullingMask |= playerGunLayerMask;
     }
 
 
