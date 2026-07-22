@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Input")]
-    [SerializeField] InputActionAsset _inputActionObj;
+    [SerializeField] private InputActionAsset _inputActionObj;
 
     [Header("Camera")]
     [SerializeField] private Transform _cameraPivot;
@@ -13,10 +13,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _minPitch;
     [SerializeField] private float _maxPitch;
 
+    [Header("Gun")]
+    [SerializeField] private Animator _playerGunAnimator;
+
     private InputAction m_lookAction;
+    private InputAction m_scopeAction;
     private Vector2 m_lookAmt;
     private float _yaw;
     private float _pitch;
+    private bool isScoped = false;
 
     private void OnEnable()
     {
@@ -31,6 +36,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         m_lookAction = InputSystem.actions.FindAction("Look");
+        m_scopeAction = InputSystem.actions.FindAction("Scope");
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -38,6 +44,12 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         Look();
+
+        if(m_scopeAction.WasPressedThisFrame())
+        {
+            isScoped = !isScoped;
+            _playerGunAnimator.SetBool("isScoped", isScoped);
+        }
     }
 
     private void Look()
@@ -51,5 +63,6 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
         _cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
     }
+
 
 }

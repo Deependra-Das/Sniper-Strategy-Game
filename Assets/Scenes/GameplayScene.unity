@@ -783,6 +783,7 @@ MonoBehaviour:
   _sensitivityY: 100
   _minPitch: -20
   _maxPitch: 10
+  _playerGunAnimator: {fileID: 2100343844}
 --- !u!1 &1408021129
 GameObject:
   m_ObjectHideFlags: 0
@@ -883,7 +884,7 @@ GameObject:
   - component: {fileID: 2100343843}
   - component: {fileID: 2100343844}
   m_Layer: 0
-  m_Name: WeaponHolder
+  m_Name: GunHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
