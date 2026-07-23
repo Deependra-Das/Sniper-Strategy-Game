@@ -155,4 +155,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96cde6d07a5bab7429c1c4e024b44ff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
-  _lifeTime: 5
+  _lifeTime: 100
+  _rigidbodyObj: {fileID: 2813360564994976887}

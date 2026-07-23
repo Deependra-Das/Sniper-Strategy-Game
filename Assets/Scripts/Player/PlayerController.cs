@@ -18,6 +18,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _minPitch;
     [SerializeField] private float _maxPitch;
 
+    [Header("Bullet Camera")]
+    [SerializeField] private CinemachineCamera _bulletCamera;
+
     [Header("Gun")]
     [SerializeField] private Animator _playerGunAnimator;
     [SerializeField] private GameObject _scopeOverlay;
@@ -158,12 +161,28 @@ public class PlayerController : MonoBehaviour
             targetPoint = ray.GetPoint(_range);
         }
 
-        Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
 
+        _bulletCamera.gameObject.transform.position = _bulletSpawnPoint.position;
+        Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
+        _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(90f, 0f, 0f);
         Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(90f, 0f, 0f);
 
         Bullet bullet = Instantiate(_bulletPrefab, _bulletSpawnPoint.position, rotation);
 
         bullet.Initialize(direction, _bulletSpeed);
+
+        _bulletCamera.Follow = bullet.transform;
+        _bulletCamera.LookAt = bullet.transform;
+        _playerCamera.Priority = 5;
+        _bulletCamera.Priority = 20;
+
+        bullet.SetController(this);
+    }
+
+    public void RestorePlayerCamera()
+    {
+        _bulletCamera.Follow = null;
+        _bulletCamera.Priority = 5;
+        _playerCamera.Priority = 20;
     }
 }
