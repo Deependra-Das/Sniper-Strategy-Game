@@ -86,20 +86,27 @@ public class PlayerController : MonoBehaviour
 
     private void HandleGunScopeInput()
     {
-        if (m_scopeAction.WasPressedThisFrame())
-        {
-            _isScoped = !_isScoped;
-            _playerGunAnimator.SetBool("isScoped", _isScoped);
+        if (!m_scopeAction.WasPressedThisFrame())
+            return;
 
-            if (_isScoped)
-            {
-                StartCoroutine(OnEnterScope());
-            }
-            else
-            {
-                OnExitScope();
-            }
-        }
+        if (_isScoped)
+            ExitScope();
+        else
+            EnterScope();
+    }
+
+    private void EnterScope()
+    {
+        _isScoped = true;
+        _playerGunAnimator.SetBool("isScoped", _isScoped);
+        StartCoroutine(OnEnterScope());
+    }
+
+    private void ExitScope()
+    {
+        _isScoped = false;
+        _playerGunAnimator.SetBool("isScoped", _isScoped);
+        OnExitScope();
     }
 
     private IEnumerator OnEnterScope()
@@ -141,7 +148,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.05f);
 
         ShootBullet();
-
+        ExitScope();
         yield return new WaitForSeconds(_boltActionDuration);
         _canShoot = true;
     }
