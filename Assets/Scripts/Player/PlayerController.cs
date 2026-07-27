@@ -171,8 +171,8 @@ public class PlayerController : MonoBehaviour
 
         _bulletCamera.gameObject.transform.position = _bulletSpawnPoint.position;
         Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
-        _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(90f, 0f, 0f);
-        Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(90f, 0f, 0f);
+        _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized);
+        Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(0f, 0f, 90f);
 
         Bullet bullet = Instantiate(_bulletPrefab, _bulletSpawnPoint.position, rotation);
 
