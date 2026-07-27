@@ -1,35 +1,48 @@
+using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class BaseEnemy : MonoBehaviour
+public abstract class BaseEnemy : MonoBehaviour
 {
-    [SerializeField] Path path;
-    [SerializeField] float waitTimeOnWayPoint = 1f;
-    NavMeshAgent agent;
+    [SerializeField] protected float behaviourLoopInterval = 0.1f;
+    protected Animator animator;
+    protected NavMeshAgent agent;
+    private Coroutine _behaviourLoopCoroutine;
+    private bool _isPaused;
 
     private float timer = 0f;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
     }
 
-    private void Start()
+    protected virtual void Start()
     {
-        agent.destination = path.GetCurrentWayPoint();
+        SetPaused(false);
+        _behaviourLoopCoroutine = StartCoroutine(BehaviourLoop());
     }
 
-    private void Update()
+    private IEnumerator BehaviourLoop()
     {
-        if(agent.remainingDistance <= 0.1f)
+        while (true)
         {
-            timer += Time.deltaTime;
-            if(timer >= waitTimeOnWayPoint)
-            {
-                timer = 0f;
-                agent.destination = path.GetNextWayPoint();
-            }
+            if (!_isPaused)
+                ExecuteBehaviour();
+
+            yield return new WaitForSeconds(behaviourLoopInterval);
         }
     }
+
+    private void SetPaused(bool paused)
+    {
+        _isPaused = paused;
+
+        agent.isStopped = paused;
+        animator.speed = paused ? 0f : 1f;
+    }
+
+    protected abstract void ExecuteBehaviour();
 }
