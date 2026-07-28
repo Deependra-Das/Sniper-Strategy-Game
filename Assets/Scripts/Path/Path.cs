@@ -2,73 +2,84 @@ using UnityEngine;
 
 public class Path : MonoBehaviour
 {
-    public Transform[] waypoints;
-    public PathTypeEnum pathType = PathTypeEnum.Loop;
-
-    private int direction = 1;
-    int index;
+    [SerializeField] private PathTypeEnum _pathType = PathTypeEnum.Loop;
+    [SerializeField] private Transform[] _wayPoints;
+    private const int Forward = 1;
+    private const int Backward = -1;
+    private int _direction = Forward;
+    private int _index;
 
     public Vector3 GetCurrentWayPoint()
     {
-        return waypoints[index].position;
-    }
-
-    public Vector3 GetNextWayPoint()
-    {
-        if (waypoints.Length == 0)
+        if (_wayPoints == null || _wayPoints.Length == 0)
         {
             return transform.position;
         }
 
-        index = GetNextWayPointIndex();
-        Vector3 nextWaypoint = waypoints[index].position;
+        return _wayPoints[_index].position;
+    }
+
+    public Vector3 GetNextWayPoint()
+    {
+        if (_wayPoints == null || _wayPoints.Length == 0)
+        {
+            return transform.position;
+        }
+
+        _index = GetNextWayPointIndex();
+        Vector3 nextWaypoint = _wayPoints[_index].position;
 
         return nextWaypoint;
     }
 
     public int GetNextWayPointIndex()
     {
-        index += direction;
+        if (_wayPoints == null || _wayPoints.Length == 0)
+        {
+            return 0;
+        }
 
-        switch(pathType)
+        _index += _direction;
+
+        switch(_pathType)
         {
             case PathTypeEnum.Loop:
 
-                index %= waypoints.Length; 
+                _index %= _wayPoints.Length; 
                 break;
 
-            case PathTypeEnum.ReverseWhenComplete:
+            case PathTypeEnum.Backtrack:
 
-                if(index >= waypoints.Length || index < 0)
+                if(_index >= _wayPoints.Length || _index < 0)
                 {
-                    direction *= -1;
-                    index += direction * 2;
+                    _direction = _direction == Forward ? Backward : Forward;
+                    _index += _direction * 2;
                 }
                 break;
         }
 
-        return index;
+        return _index;
     }
 
     private void OnDrawGizmos()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
+        if (_wayPoints == null || _wayPoints.Length == 0) return;
 
         Gizmos.color = Color.white;
 
-        for (int i = 0; i < waypoints.Length - 1; i++)
+        for (int i = 0; i < _wayPoints.Length - 1; i++)
         {
-            Gizmos.DrawLine(waypoints[i].position, waypoints[i + 1].position);
+            Gizmos.DrawLine(_wayPoints[i].position, _wayPoints[i + 1].position);
         }
 
-        if(pathType == PathTypeEnum.Loop)
+        if(_pathType == PathTypeEnum.Loop)
         {
-            Gizmos.DrawLine(waypoints[waypoints.Length-1].position, waypoints[0].position);
+            Gizmos.DrawLine(_wayPoints[_wayPoints.Length-1].position, _wayPoints[0].position);
         }
 
         Gizmos.color= Color.red;
 
-        foreach (Transform waypoint in waypoints)
+        foreach (Transform waypoint in _wayPoints)
         {
             Gizmos.DrawSphere(waypoint.position, 0.2f);
         }

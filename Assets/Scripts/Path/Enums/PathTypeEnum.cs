@@ -4,5 +4,5 @@ using UnityEngine;
 public enum PathTypeEnum
 {
     Loop,
-    ReverseWhenComplete,
+    Backtrack,
 }
