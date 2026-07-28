@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 732953fa90bf56942a84625b42cdbf1d
+guid: cc0f91b45ac837e408b89bf87b3119a7
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
@@ -8,8 +8,8 @@ NativeFormatImporter:
   assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
-  productId: 260492
-  packageName: Weapons FREE - Low Poly 3D Models Pack
-  packageVersion: 2.0
-  assetPath: Assets/ithappy/Weapons_FREE/Materials/Material.mat
-  uploadId: 821366
+  productId: 356122
+  packageName: Low Poly Weapon Series 4 MW 1
+  packageVersion: 1.0
+  assetPath: Assets/Low Poly Weapon Pack 4_MW_1/Materials/Low Poly Weapon.mat
+  uploadId: 848724
