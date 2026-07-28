@@ -1,14 +1,14 @@
 using UnityEngine;
 
-
 namespace SniperStrategyGame.SceneLoader
 { 
     public enum SceneNameEnum
     {
-        BootstrapScene,
-        MainMenuScene,
-        GameplayStage1Scene,
-        GameplayStage2Scene,
-        GameplayStage3Scene,
+        Bootstrap,
+        MainMenu,
+        StageSelection,
+        GameplayStage1,
+        GameplayStage2,
+        GameplayStage3,
     }
 }
