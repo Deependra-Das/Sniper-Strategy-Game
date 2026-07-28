@@ -1,5 +1,5 @@
 using SniperStrategyGame.Utilities;
-using UnityEngine;
+using SniperStrategyGame.Event;
 
 namespace SniperStrategyGame.Main
 {
@@ -16,6 +16,8 @@ namespace SniperStrategyGame.Main
         private void InitializeServices()
         {
             Services = new ServiceLocator();
+
+            Services.Register(new EventBusService());
         }
     }
 }
