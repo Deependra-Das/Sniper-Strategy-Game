@@ -11,8 +11,6 @@ public abstract class BaseEnemy : MonoBehaviour
     private Coroutine _behaviourLoopCoroutine;
     private bool _isPaused;
 
-    private float timer = 0f;
-
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
