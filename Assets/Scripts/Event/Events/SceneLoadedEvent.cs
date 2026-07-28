@@ -2,7 +2,7 @@ using SniperStrategyGame.SceneLoader;
 
 namespace SniperStrategyGame.Event
 {
-    public class SceneLoadedEvent
+    public struct SceneLoadedEvent
     {
         public SceneNameEnum SceneName { get; }
 
