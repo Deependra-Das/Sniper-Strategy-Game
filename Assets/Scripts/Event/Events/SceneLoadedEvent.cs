@@ -1,11 +1,14 @@
 using SniperStrategyGame.SceneLoader;
 
-public class SceneLoadedEvent
+namespace SniperStrategyGame.Event
 {
-    public SceneNameEnum SceneName { get; }
-
-    public SceneLoadedEvent(SceneNameEnum sceneName)
+    public class SceneLoadedEvent
     {
-        SceneName = sceneName;
+        public SceneNameEnum SceneName { get; }
+
+        public SceneLoadedEvent(SceneNameEnum sceneName)
+        {
+            SceneName = sceneName;
+        }
     }
 }

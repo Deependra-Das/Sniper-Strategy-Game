@@ -3,38 +3,41 @@ using SniperStrategyGame.SceneLoader;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MainMenuUIManager : MonoBehaviour
+namespace SniperStrategyGame.UI.MainMenu
 {
-    [SerializeField] private Button _playButton;
-    private SceneLoaderService _sceneLoader;
-
-    private void Awake()
+    public class MainMenuUIManager : MonoBehaviour
     {
-        _sceneLoader = GameManager.Instance.Services.Get<SceneLoaderService>();
-    }
+        [SerializeField] private Button _playButton;
+        private SceneLoaderService _sceneLoader;
 
-    private void OnEnable()
-    {
-        SubscribeToEvents();
-    }
+        private void Awake()
+        {
+            _sceneLoader = GameManager.Instance.Services.Get<SceneLoaderService>();
+        }
 
-    private void OnDisable()
-    {
-        UnsubscribeToEvents();
-    }
+        private void OnEnable()
+        {
+            SubscribeToEvents();
+        }
 
-    private void SubscribeToEvents()
-    {
-        _playButton.onClick.AddListener(OnPlayButtonClicked);
-    }
+        private void OnDisable()
+        {
+            UnsubscribeToEvents();
+        }
 
-    private void UnsubscribeToEvents()
-    {
-        _playButton.onClick.RemoveListener(OnPlayButtonClicked);
-    }
+        private void SubscribeToEvents()
+        {
+            _playButton.onClick.AddListener(OnPlayButtonClicked);
+        }
 
-    public void OnPlayButtonClicked()
-    {
-        _sceneLoader.LoadScene(SceneNameEnum.StageSelection);
+        private void UnsubscribeToEvents()
+        {
+            _playButton.onClick.RemoveListener(OnPlayButtonClicked);
+        }
+
+        public void OnPlayButtonClicked()
+        {
+            _sceneLoader.LoadScene(SceneNameEnum.StageSelection);
+        }
     }
 }
