@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34f5a7fea6adbc34a9eadecf5f922910, type: 3}
+  m_Name: Enemy_SO
+  m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Enemy.Enemy_SO
+  enemyDataList:
+  - enemyType: 0
+    enemyPrefab: {fileID: 3644458786384066742, guid: bae3b6da9f558a04994badd5424cbd6f, type: 3}
+  - enemyType: 1
+    enemyPrefab: {fileID: 3323376812416812218, guid: 29275473dc42c1a499187925872e54cb, type: 3}
+  - enemyType: 2
+    enemyPrefab: {fileID: 2218077977858005114, guid: 2fc773a5e63399340957bc7dcff6b22e, type: 3}
