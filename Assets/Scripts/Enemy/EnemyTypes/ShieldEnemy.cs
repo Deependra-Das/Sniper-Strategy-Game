@@ -1,9 +1,12 @@
 using UnityEngine;
 
-public class ShieldEnemy : BaseEnemy
+namespace SniperStrategyGame.Enemy
 {
-    protected override void ExecuteBehaviour()
+    public class ShieldEnemy : BaseEnemy
     {
-        agent.ResetPath();
+        protected override void ExecuteBehaviour()
+        {
+            agent.ResetPath();
+        }
     }
 }

@@ -1,46 +1,79 @@
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Gameplay;
+using SniperStrategyGame.Main;
 using System.Collections;
-using System.IO;
 using UnityEngine;
 using UnityEngine.AI;
 
-public abstract class BaseEnemy : MonoBehaviour
+namespace SniperStrategyGame.Enemy
 {
-    [SerializeField] protected float behaviourLoopInterval = 0.1f;
-    protected Animator animator;
-    protected NavMeshAgent agent;
-    private Coroutine _behaviourLoopCoroutine;
-    private bool _isPaused;
-
-    private void Awake()
+    public abstract class BaseEnemy : MonoBehaviour
     {
-        agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
-    }
+        [SerializeField] protected float behaviourLoopInterval = 0.1f;
+        protected Animator animator;
+        protected NavMeshAgent agent;
+        private Coroutine _behaviourLoopCoroutine;
+        private bool _isActive;
+        protected GameplayManager gameplayManagerObj;
+        private EventBusService _eventBusServiceObj;
 
-    protected virtual void Start()
-    {
-        SetPaused(false);
-        _behaviourLoopCoroutine = StartCoroutine(BehaviourLoop());
-    }
-
-    private IEnumerator BehaviourLoop()
-    {
-        while (true)
+        private void Awake()
         {
-            if (!_isPaused)
-                ExecuteBehaviour();
+            agent = GetComponent<NavMeshAgent>();
+            animator = GetComponent<Animator>();
+        }
 
-            yield return new WaitForSeconds(behaviourLoopInterval);
+        public void Initialize(GameplayManager gameplayManagerObj)
+        {
+            this.gameplayManagerObj = gameplayManagerObj;
+            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+            _eventBusServiceObj.Subscribe<ActivateEnemiesEvent>(OnActivateEnemies);
+
+            SetActive(false);
+        }
+
+        private void OnActivateEnemies(ActivateEnemiesEvent eventObj)
+        {
+            ActivateEnemy();
+        }
+
+        protected virtual void ActivateEnemy()
+        {
+            SetActive(true);
+
+            if (_behaviourLoopCoroutine == null)
+            {
+                _behaviourLoopCoroutine = StartCoroutine(BehaviourLoop());
+            }
+        }
+
+        private IEnumerator BehaviourLoop()
+        {
+            while (true)
+            {
+                if (!_isActive)
+                    ExecuteBehaviour();
+
+                yield return new WaitForSeconds(behaviourLoopInterval);
+            }
+        }
+
+        private void SetActive(bool isActive)
+        {
+            _isActive = isActive;
+
+            agent.isStopped = isActive;
+            animator.speed = isActive ? 0f : 1f;
+        }
+
+        protected abstract void ExecuteBehaviour();
+
+        protected virtual void OnDestroy()
+        {
+            if (_behaviourLoopCoroutine != null)
+            {
+                StopCoroutine(_behaviourLoopCoroutine);
+            }
         }
     }
-
-    private void SetPaused(bool paused)
-    {
-        _isPaused = paused;
-
-        agent.isStopped = paused;
-        animator.speed = paused ? 0f : 1f;
-    }
-
-    protected abstract void ExecuteBehaviour();
 }
