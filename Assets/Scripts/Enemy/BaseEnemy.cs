@@ -51,7 +51,7 @@ namespace SniperStrategyGame.Enemy
         {
             while (true)
             {
-                if (!_isActive)
+                if (_isActive)
                     ExecuteBehaviour();
 
                 yield return new WaitForSeconds(behaviourLoopInterval);
@@ -62,8 +62,8 @@ namespace SniperStrategyGame.Enemy
         {
             _isActive = isActive;
 
-            agent.isStopped = isActive;
-            animator.speed = isActive ? 0f : 1f;
+            agent.isStopped = !isActive;
+            animator.speed = isActive ? 1f : 0f;
         }
 
         protected abstract void ExecuteBehaviour();

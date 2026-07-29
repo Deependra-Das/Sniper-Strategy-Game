@@ -4,33 +4,38 @@ namespace SniperStrategyGame.Enemy
 {
     public class PatrolEnemy : BaseEnemy
     {
-        [SerializeField] private Path path;
         [SerializeField] private float waitTimeOnWayPoint = 2f;
-        private float timer;
+        private Path _path;
+        private float _timer;
+
+        public void SetPatrolPath(Path path)
+        {
+            _path = path;
+        }
 
         protected override void ActivateEnemy()
         {
             base.ActivateEnemy();
 
-            if (path != null)
-                agent.destination = path.GetNextWayPoint();
+            if (_path != null)
+                agent.destination = _path.GetNextWayPoint();
         }
 
         protected override void ExecuteBehaviour()
         {
             if (agent.remainingDistance <= 0.1f)
             {
-                timer += behaviourLoopInterval;
+                _timer += behaviourLoopInterval;
 
-                if (timer >= waitTimeOnWayPoint)
+                if (_timer >= waitTimeOnWayPoint)
                 {
-                    timer = 0f;
-                    agent.destination = path.GetNextWayPoint();
+                    _timer = 0f;
+                    agent.destination = _path.GetNextWayPoint();
                 }
             }
             else
             {
-                timer = 0f;
+                _timer = 0f;
             }
 
             float normalizedSpeed = Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude);
