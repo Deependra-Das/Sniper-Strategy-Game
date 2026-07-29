@@ -9,7 +9,10 @@ namespace SniperStrategyGame.Gameplay
     public class GameplayManager : MonoBehaviour
     {
         [SerializeField] private Enemy_SO _enemySO;
-        [SerializeField] private List<EnemySpawnData> _enemySpawns;
+        [SerializeField] private List<Transform> _guardSpawnPointList;
+        [SerializeField] private List<Transform> _patrolSpawnPointList;
+        [SerializeField] private List<Transform> _shieldSpawnPointList;
+        [SerializeField] private List<Path> _patrolPathList;
 
         private Dictionary<EnemyTypeEnum, BaseEnemy> _enemyPrefabLookup;
         private readonly List<BaseEnemy> _aliveEnemies = new();
@@ -42,23 +45,47 @@ namespace SniperStrategyGame.Gameplay
 
         private void SpawnEnemies()
         {
-            foreach (var spawnData in _enemySpawns)
+            SpawnEnemyGroup(EnemyTypeEnum.Guard, _guardSpawnPointList);
+            SpawnEnemyGroup(EnemyTypeEnum.Shield, _shieldSpawnPointList);
+            SpawnEnemyGroup(EnemyTypeEnum.Patrol, _patrolSpawnPointList);
+
+            GameManager.Instance.Services.Get<EventBusService>().Publish(new ActivateEnemiesEvent());
+        }
+
+        private void SpawnEnemyGroup(EnemyTypeEnum enemyType, List<Transform> spawnPointList)
+        {
+            if (!_enemyPrefabLookup.TryGetValue(enemyType, out BaseEnemy enemyPrefab))
             {
-                if (!_enemyPrefabLookup.TryGetValue(spawnData.enemyType, out BaseEnemy enemyPrefab))
+                Debug.LogError($"Missing prefab for {enemyType}");
+                return;
+            }
+            for (int j = 0; j < spawnPointList.Count; j++)
+            {
+                Transform spawnPoint = spawnPointList[j];
+
+                BaseEnemy enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+                enemy.Initialize(this);
+
+                if (enemy is PatrolEnemy patrolEnemy)
                 {
-                    Debug.LogError($"Enemy prefab not found for type {spawnData.enemyType}");
-                    continue;
+                    patrolEnemy.SetPatrolPath(GetPatrolPath(j));
                 }
 
-                BaseEnemy enemy = Instantiate(enemyPrefab, spawnData.spawnPoint.position, spawnData.spawnPoint.rotation);
-
-                enemy.Initialize(this);
                 _aliveEnemies.Add(enemy);
 
                 GameManager.Instance.Services.Get<EventBusService>().Publish(new EnemySpawnedEvent(enemy));
             }
+        }
 
-            GameManager.Instance.Services.Get<EventBusService>().Publish(new ActivateEnemiesEvent());
+        private Path GetPatrolPath(int index)
+        {
+            if (index >= _patrolPathList.Count)
+            {
+                Debug.LogWarning("Missing patrol path");
+                return null;
+            }
+
+            return _patrolPathList[index];
         }
 
         public void EnemyDied(BaseEnemy enemy)
