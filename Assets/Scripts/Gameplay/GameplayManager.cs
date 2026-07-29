@@ -1,6 +1,7 @@
 using SniperStrategyGame.Enemy;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
+using SniperStrategyGame.Path;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace SniperStrategyGame.Gameplay
         [SerializeField] private List<Transform> _guardSpawnPointList;
         [SerializeField] private List<Transform> _patrolSpawnPointList;
         [SerializeField] private List<Transform> _shieldSpawnPointList;
-        [SerializeField] private List<Path> _patrolPathList;
+        [SerializeField] private List<PatrolPath> _patrolPathList;
 
         private Dictionary<EnemyTypeEnum, BaseEnemy> _enemyPrefabLookup;
         private readonly List<BaseEnemy> _aliveEnemies = new();
@@ -77,7 +78,7 @@ namespace SniperStrategyGame.Gameplay
             }
         }
 
-        private Path GetPatrolPath(int index)
+        private PatrolPath GetPatrolPath(int index)
         {
             if (index >= _patrolPathList.Count)
             {

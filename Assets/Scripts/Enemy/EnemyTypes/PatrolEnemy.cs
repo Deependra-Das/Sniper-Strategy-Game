@@ -1,24 +1,25 @@
 using UnityEngine;
+using SniperStrategyGame.Path;
 
 namespace SniperStrategyGame.Enemy
 {
     public class PatrolEnemy : BaseEnemy
     {
         [SerializeField] private float waitTimeOnWayPoint = 2f;
-        private Path _path;
+        private PatrolPath _patrolPath;
         private float _timer;
 
-        public void SetPatrolPath(Path path)
+        public void SetPatrolPath(PatrolPath path)
         {
-            _path = path;
+            _patrolPath = path;
         }
 
         protected override void ActivateEnemy()
         {
             base.ActivateEnemy();
 
-            if (_path != null)
-                agent.destination = _path.GetNextWayPoint();
+            if (_patrolPath != null)
+                agent.destination = _patrolPath.GetNextWayPoint();
         }
 
         protected override void ExecuteBehaviour()
@@ -30,7 +31,7 @@ namespace SniperStrategyGame.Enemy
                 if (_timer >= waitTimeOnWayPoint)
                 {
                     _timer = 0f;
-                    agent.destination = _path.GetNextWayPoint();
+                    agent.destination = _patrolPath.GetNextWayPoint();
                 }
             }
             else
