@@ -1,3 +1,5 @@
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Main;
 using SniperStrategyGame.Player;
 using UnityEngine;
 
@@ -9,6 +11,12 @@ namespace SniperStrategyGame.Bullet
         [SerializeField] private float _lifeTime = 100f;
         [SerializeField] private Rigidbody _rigidbodyObj;
         private PlayerController controller;
+        private EventBusService _eventBusServiceObj;
+
+        private void Awake()
+        {
+            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+        }
 
         public void Initialize(Vector3 direction, float speed)
         {
@@ -35,6 +43,7 @@ namespace SniperStrategyGame.Bullet
                 Debug.Log("Enemy Hit");
             }
 
+            _eventBusServiceObj.Publish(new PlayerBulletImpactEvent());
             controller.RestorePlayerCamera();
             Destroy(gameObject);
         }

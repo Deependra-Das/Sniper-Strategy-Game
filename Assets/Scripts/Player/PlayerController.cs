@@ -1,8 +1,10 @@
+using SniperStrategyGame.Bullet;
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Main;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using SniperStrategyGame.Bullet;
 
 namespace SniperStrategyGame.Player
 {
@@ -47,6 +49,7 @@ namespace SniperStrategyGame.Player
         private bool _canShoot = false;
         private float _normalFOV;
         private int playerGunLayerMask;
+        private EventBusService _eventBusServiceObj;
 
         private void OnEnable()
         {
@@ -66,6 +69,7 @@ namespace SniperStrategyGame.Player
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
         }
 
         private void Update()
@@ -158,6 +162,7 @@ namespace SniperStrategyGame.Player
 
         private void ShootBullet()
         {
+            _eventBusServiceObj.Publish(new PlayerBulletFiredEvent());
             Ray ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
 
             Vector3 targetPoint;

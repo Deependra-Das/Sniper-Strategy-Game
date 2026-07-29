@@ -28,7 +28,8 @@ namespace SniperStrategyGame.Enemy
             this.gameplayManagerObj = gameplayManagerObj;
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             _eventBusServiceObj.Subscribe<ActivateEnemiesEvent>(OnActivateEnemies);
-
+            _eventBusServiceObj.Subscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
+            _eventBusServiceObj.Subscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
             SetActive(false);
         }
 
@@ -66,6 +67,28 @@ namespace SniperStrategyGame.Enemy
             animator.speed = isActive ? 1f : 0f;
         }
 
+        private void OnPlayerBulletFired(PlayerBulletFiredEvent eventObj)
+        {
+            Freeze();
+        }
+
+        private void OnPlayerBulletImpact(PlayerBulletImpactEvent eventObj)
+        {
+            UnFreeze();
+        }
+
+        private void Freeze()
+        {
+            agent.isStopped = true;
+            animator.speed = 0f;
+        }
+
+        private void UnFreeze()
+        {
+            agent.isStopped = false;
+            animator.speed = 1f;
+        }
+
         protected abstract void ExecuteBehaviour();
 
         protected virtual void OnDestroy()
@@ -73,6 +96,13 @@ namespace SniperStrategyGame.Enemy
             if (_behaviourLoopCoroutine != null)
             {
                 StopCoroutine(_behaviourLoopCoroutine);
+            }
+
+            if (_eventBusServiceObj != null)
+            {
+                _eventBusServiceObj.Unsubscribe<ActivateEnemiesEvent>(OnActivateEnemies);
+                _eventBusServiceObj.Unsubscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
+                _eventBusServiceObj.Unsubscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
             }
         }
     }
