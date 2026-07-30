@@ -3781,6 +3781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShieldEnemy
   behaviourLoopInterval: 0.1
+  shieldCollider: {fileID: 6684879863873218413}
 --- !u!1 &8720901373227860788
 GameObject:
   m_ObjectHideFlags: 0
@@ -4256,6 +4257,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3c56b4966cbc9f44ba5355d7be51d6cc, type: 3}
+--- !u!65 &6684879863873218413 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 2813685105264672239, guid: 3c56b4966cbc9f44ba5355d7be51d6cc, type: 3}
+  m_PrefabInstance: {fileID: 8919732432275020418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7363642708187125094 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2159945942540423140, guid: 3c56b4966cbc9f44ba5355d7be51d6cc, type: 3}
