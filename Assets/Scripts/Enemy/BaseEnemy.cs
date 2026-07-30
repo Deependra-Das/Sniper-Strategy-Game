@@ -27,14 +27,14 @@ namespace SniperStrategyGame.Enemy
         {
             eventBusServiceObj.Subscribe<ActivateEnemiesEvent>(OnActivateEnemies);
             eventBusServiceObj.Subscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
-            eventBusServiceObj.Subscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+            eventBusServiceObj.Subscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletImpact);
         }
 
         protected virtual void UnsubscribeToEvents()
         {
             eventBusServiceObj.Unsubscribe<ActivateEnemiesEvent>(OnActivateEnemies);
             eventBusServiceObj.Unsubscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
-            eventBusServiceObj.Unsubscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+            eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletImpact);
         }
 
         public void Initialize(GameplayManager gameplayManagerObj)
@@ -84,7 +84,7 @@ namespace SniperStrategyGame.Enemy
             Freeze();
         }
 
-        private void OnPlayerBulletImpact(PlayerBulletImpactEvent eventObj)
+        private void OnPlayerBulletImpact(PlayerBulletHitEnemyEvent eventObj)
         {
             UnFreeze();
         }
@@ -103,9 +103,10 @@ namespace SniperStrategyGame.Enemy
 
         protected abstract void ExecuteBehaviour();
 
-        public virtual void OnBulletHit(Collider hitCollider)
+        public virtual bool OnBulletHit(Collider hitCollider)
         {
             HandleDeath();
+            return true;
         }
 
         protected virtual void HandleDeath()

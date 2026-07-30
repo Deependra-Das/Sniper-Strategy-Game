@@ -10,15 +10,17 @@ namespace SniperStrategyGame.Enemy
         {
             agent.ResetPath();
         }
-        public override void OnBulletHit(Collider hitCollider)
+
+        public override bool OnBulletHit(Collider hitCollider)
         {
             if (hitCollider == shieldCollider)
             {
                 Debug.Log("Shield blocked bullet");
-                return;
+                return false;
             }
 
             HandleDeath();
+            return true;
         }
     }
 }
