@@ -15,7 +15,7 @@ namespace SniperStrategyGame.Enemy
         private Coroutine _behaviourLoopCoroutine;
         private bool _isActive;
         protected GameplayManager gameplayManagerObj;
-        private EventBusService _eventBusServiceObj;
+        protected EventBusService eventBusServiceObj;
 
         private void Awake()
         {
@@ -23,13 +23,25 @@ namespace SniperStrategyGame.Enemy
             animator = GetComponent<Animator>();
         }
 
+        protected virtual void SubscribeToEvents()
+        {
+            eventBusServiceObj.Subscribe<ActivateEnemiesEvent>(OnActivateEnemies);
+            eventBusServiceObj.Subscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
+            eventBusServiceObj.Subscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+        }
+
+        protected virtual void UnsubscribeToEvents()
+        {
+            eventBusServiceObj.Unsubscribe<ActivateEnemiesEvent>(OnActivateEnemies);
+            eventBusServiceObj.Unsubscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
+            eventBusServiceObj.Unsubscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+        }
+
         public void Initialize(GameplayManager gameplayManagerObj)
         {
             this.gameplayManagerObj = gameplayManagerObj;
-            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
-            _eventBusServiceObj.Subscribe<ActivateEnemiesEvent>(OnActivateEnemies);
-            _eventBusServiceObj.Subscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
-            _eventBusServiceObj.Subscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+            eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+            SubscribeToEvents();
             SetActive(false);
         }
 
@@ -91,19 +103,44 @@ namespace SniperStrategyGame.Enemy
 
         protected abstract void ExecuteBehaviour();
 
-        protected virtual void OnDestroy()
+        public virtual void OnBulletHit(Collider hitCollider)
+        {
+            HandleDeath();
+        }
+
+        protected virtual void HandleDeath()
+        {
+            Cleanup();
+            gameplayManagerObj.EnemyDied(this);
+        }
+
+        protected virtual void Cleanup()
         {
             if (_behaviourLoopCoroutine != null)
             {
                 StopCoroutine(_behaviourLoopCoroutine);
+                _behaviourLoopCoroutine = null;
             }
 
-            if (_eventBusServiceObj != null)
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
             {
-                _eventBusServiceObj.Unsubscribe<ActivateEnemiesEvent>(OnActivateEnemies);
-                _eventBusServiceObj.Unsubscribe<PlayerBulletFiredEvent>(OnPlayerBulletFired);
-                _eventBusServiceObj.Unsubscribe<PlayerBulletImpactEvent>(OnPlayerBulletImpact);
+                agent.isStopped = true;
             }
+
+            if (animator != null)
+            {
+                animator.enabled = false;
+            }
+
+            if (eventBusServiceObj != null)
+            {
+                UnsubscribeToEvents();
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            Cleanup();
         }
     }
 }
