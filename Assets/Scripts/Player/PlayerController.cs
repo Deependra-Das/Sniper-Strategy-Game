@@ -54,11 +54,25 @@ namespace SniperStrategyGame.Player
         private void OnEnable()
         {
             _inputActionObj.FindActionMap("Player").Enable();
+            SubscribeToEvents();
         }
 
         private void OnDisable()
         {
             _inputActionObj.FindActionMap("Player").Disable();
+            UnsubscribeToEvents();
+        }
+
+        protected virtual void SubscribeToEvents()
+        {
+            _eventBusServiceObj.Subscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
+            _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
+        }
+
+        protected virtual void UnsubscribeToEvents()
+        {
+            _eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
+            _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
         }
 
         private void Awake()
@@ -97,39 +111,39 @@ namespace SniperStrategyGame.Player
                 return;
 
             if (_isScoped)
-                ExitScope();
+                DisableScope();
             else
-                EnterScope();
+                EnableScope();
         }
 
-        private void EnterScope()
+        private void EnableScope()
         {
             _isScoped = true;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
-            StartCoroutine(OnEnterScope());
+            StartCoroutine(ActivateScopeRoutine());
         }
 
-        private void ExitScope()
+        private void DisableScope()
         {
             _isScoped = false;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
-            OnExitScope();
+            HandleScopeDeactivation();
         }
 
-        private IEnumerator OnEnterScope()
+        private IEnumerator ActivateScopeRoutine()
         {
             yield return new WaitForSeconds(_scopeDuration);
             _scopeOverlay.SetActive(true);
-            _mainCamera.cullingMask &= ~playerGunLayerMask;
+            StopRenderingGun();
             _normalFOV = _playerCamera.Lens.FieldOfView;
             _playerCamera.Lens.FieldOfView = _scopedFOV;
             _canShoot = true;
         }
 
-        private void OnExitScope()
+        private void HandleScopeDeactivation()
         {
             _scopeOverlay.SetActive(false);
-            _mainCamera.cullingMask |= playerGunLayerMask;
+            RestoreRenderingGun();
             _playerCamera.Lens.FieldOfView = _normalFOV;
             _canShoot = false;
         }
@@ -153,9 +167,8 @@ namespace SniperStrategyGame.Player
             _canShoot = false;
 
             yield return new WaitForSeconds(0.05f);
-
+            DisableScope();
             ShootBullet();
-            ExitScope();
             yield return new WaitForSeconds(_boltActionDuration);
             _canShoot = true;
         }
@@ -176,7 +189,6 @@ namespace SniperStrategyGame.Player
                 targetPoint = ray.GetPoint(_range);
             }
 
-
             _bulletCamera.gameObject.transform.position = _bulletSpawnPoint.position;
             Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
             _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized);
@@ -185,20 +197,76 @@ namespace SniperStrategyGame.Player
             PlayerBullet bullet = Instantiate(_bulletPrefab, _bulletSpawnPoint.position, rotation);
 
             bullet.Initialize(direction, _bulletSpeed);
+            ActivateBulletCamera(bullet.transform);
+        }
 
-            _bulletCamera.Follow = bullet.transform;
-            _bulletCamera.LookAt = bullet.transform;
+        private void ActivateBulletCamera(Transform target)
+        {
+            StopRenderingGun();
+
+            _bulletCamera.Follow = target;
+            _bulletCamera.LookAt = target;
+
             _playerCamera.Priority = 5;
             _bulletCamera.Priority = 20;
-
-            bullet.SetController(this);
         }
 
-        public void RestorePlayerCamera()
+        private void OnPlayerBulletHitEnemy(PlayerBulletHitEnemyEvent eventObj)
+        {
+            TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+            MovePlayerCamera(eventObj.enemyPosition, eventObj.shotDirection);
+            SwitchToPlayerCamera();
+            RestoreRenderingGun();
+        }
+
+        private void OnPlayerBulletMissedEnemyEvent(PlayerBulletMissedEnemyEvent eventObj)
+        {
+            SwitchToPlayerCamera();
+            RestoreRenderingGun();
+        }
+
+        private void TeleportToShotEnemy(Vector3 position, Vector3 rotation)
+        {
+            Vector3 newPosition = transform.position;
+            newPosition.x = position.x;
+            newPosition.z = position.z;
+
+            transform.position = newPosition;
+
+            Vector3 lookDirection = -rotation;
+            lookDirection.y = 0f;
+
+            if (lookDirection != Vector3.zero)
+            {
+                transform.rotation = Quaternion.LookRotation(lookDirection);
+            }         
+        }
+
+        private void MovePlayerCamera(Vector3 position, Vector3 rotation)
+        {
+            Vector3 newPosition = _playerCamera.transform.position;
+            newPosition.x = position.x;
+            newPosition.z = position.z;
+            _playerCamera.transform.position = newPosition;
+        }
+
+        private void StopRenderingGun()
+        {
+            _mainCamera.cullingMask &= ~playerGunLayerMask;
+        }
+
+        private void RestoreRenderingGun()
+        {
+            _mainCamera.cullingMask |= playerGunLayerMask;
+        }
+
+        private void SwitchToPlayerCamera()
         {
             _bulletCamera.Follow = null;
+            _bulletCamera.LookAt = null;
+
             _bulletCamera.Priority = 5;
             _playerCamera.Priority = 20;
-        }
+        }     
     }
 }
