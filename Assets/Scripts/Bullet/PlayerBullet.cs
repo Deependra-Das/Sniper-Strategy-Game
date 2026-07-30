@@ -1,3 +1,4 @@
+using SniperStrategyGame.Enemy;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Player;
@@ -32,15 +33,11 @@ namespace SniperStrategyGame.Bullet
 
         private void OnCollisionEnter(Collision collision)
         {
-            Collider hitCollider = collision.collider;
+            BaseEnemy enemy = collision.collider.GetComponentInParent<BaseEnemy>();
 
-            if (hitCollider.CompareTag("EnemyShield"))
+            if (enemy != null)
             {
-                Debug.Log("EnemyShield Hit");
-            }
-            if (hitCollider.CompareTag("Enemy"))
-            {
-                Debug.Log("Enemy Hit");
+                enemy.OnBulletHit(collision.collider);
             }
 
             _eventBusServiceObj.Publish(new PlayerBulletImpactEvent());
