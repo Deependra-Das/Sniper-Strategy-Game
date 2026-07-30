@@ -11,7 +11,7 @@ namespace SniperStrategyGame.Bullet
     {
         [SerializeField] private float _lifeTime = 100f;
         [SerializeField] private Rigidbody _rigidbodyObj;
-        private PlayerController controller;
+        private Vector3 _shotDirection;
         private EventBusService _eventBusServiceObj;
 
         private void Awake()
@@ -22,13 +22,8 @@ namespace SniperStrategyGame.Bullet
         public void Initialize(Vector3 direction, float speed)
         {
             _rigidbodyObj.linearVelocity = direction.normalized * speed;
-
+            _shotDirection = direction.normalized;
             Destroy(gameObject, _lifeTime);
-        }
-
-        public void SetController(PlayerController player)
-        {
-            controller = player;
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -37,11 +32,22 @@ namespace SniperStrategyGame.Bullet
 
             if (enemy != null)
             {
-                enemy.OnBulletHit(collision.collider);
-            }
+                Vector3 enemyosition = enemy.transform.position;
+                bool hitEnemy = enemy.OnBulletHit(collision.collider);
 
-            _eventBusServiceObj.Publish(new PlayerBulletImpactEvent());
-            controller.RestorePlayerCamera();
+                if (hitEnemy)
+                {
+                    _eventBusServiceObj.Publish(new PlayerBulletHitEnemyEvent(enemyosition, _shotDirection));
+                }
+                else
+                {
+                    _eventBusServiceObj.Publish(new PlayerBulletMissedEnemyEvent());
+                }
+            }
+            else
+            {
+                _eventBusServiceObj.Publish(new PlayerBulletMissedEnemyEvent());
+            }
             Destroy(gameObject);
         }
     }
