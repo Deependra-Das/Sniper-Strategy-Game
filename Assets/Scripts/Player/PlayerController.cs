@@ -32,7 +32,6 @@ namespace SniperStrategyGame.Player
         [SerializeField] private float _scopeDuration;
 
         [Header("Shooting")]
-        [SerializeField] private PlayerBullet _bulletPrefab;
         [SerializeField] private Transform _bulletSpawnPoint;
         [SerializeField] private float _range = 100f;
         [SerializeField] private float _bulletSpeed = 50f;
@@ -50,6 +49,7 @@ namespace SniperStrategyGame.Player
         private float _normalFOV;
         private int playerGunLayerMask;
         private EventBusService _eventBusServiceObj;
+        private BulletService _bulletServiceObj;
 
         private void OnEnable()
         {
@@ -84,6 +84,7 @@ namespace SniperStrategyGame.Player
             Cursor.visible = false;
             playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+            _bulletServiceObj = GameManager.Instance.Services.Get<BulletService>();
         }
 
         private void Update()
@@ -194,7 +195,7 @@ namespace SniperStrategyGame.Player
             _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized);
             Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(0f, 0f, 90f);
 
-            PlayerBullet bullet = Instantiate(_bulletPrefab, _bulletSpawnPoint.position, rotation);
+            PlayerBullet bullet = _bulletServiceObj.SpawnPlayerBullet(_bulletSpawnPoint.position, rotation);
 
             bullet.Initialize(direction, _bulletSpeed);
             ActivateBulletCamera(bullet.transform);
