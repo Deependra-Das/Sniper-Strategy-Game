@@ -1,37 +1,46 @@
 using UnityEngine;
+using SniperStrategyGame.Path;
 
-public class PatrolEnemy : BaseEnemy
+namespace SniperStrategyGame.Enemy
 {
-    [SerializeField] private Path path;
-    [SerializeField] private float waitTimeOnWayPoint = 2f;
-    private float timer;
-
-    protected override void Start()
+    public class PatrolEnemy : BaseEnemy
     {
-        base.Start();
+        [SerializeField] private float waitTimeOnWayPoint = 2f;
+        private PatrolPath _patrolPath;
+        private float _timer;
 
-        if (path != null)
-            agent.destination = path.GetNextWayPoint();
-    }
-
-    protected override void ExecuteBehaviour()
-    {
-        if (agent.remainingDistance <= 0.1f)
+        public void SetPatrolPath(PatrolPath path)
         {
-            timer += behaviourLoopInterval;
+            _patrolPath = path;
+        }
 
-            if (timer >= waitTimeOnWayPoint)
+        protected override void ActivateEnemy()
+        {
+            base.ActivateEnemy();
+
+            if (_patrolPath != null)
+                agent.destination = _patrolPath.GetNextWayPoint();
+        }
+
+        protected override void ExecuteBehaviour()
+        {
+            if (agent.remainingDistance <= 0.1f)
             {
-                timer = 0f;
-                agent.destination = path.GetNextWayPoint();
-            }
-        }
-        else
-        {
-            timer = 0f;
-        }
+                _timer += behaviourLoopInterval;
 
-        float normalizedSpeed = Mathf.InverseLerp( 0f, agent.speed, agent.velocity.magnitude);
-        animator.SetFloat("Speed", normalizedSpeed);
+                if (_timer >= waitTimeOnWayPoint)
+                {
+                    _timer = 0f;
+                    agent.destination = _patrolPath.GetNextWayPoint();
+                }
+            }
+            else
+            {
+                _timer = 0f;
+            }
+
+            float normalizedSpeed = Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude);
+            animator.SetFloat("Speed", normalizedSpeed);
+        }
     }
 }

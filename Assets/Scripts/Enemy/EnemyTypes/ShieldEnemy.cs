@@ -1,9 +1,26 @@
 using UnityEngine;
 
-public class ShieldEnemy : BaseEnemy
+namespace SniperStrategyGame.Enemy
 {
-    protected override void ExecuteBehaviour()
+    public class ShieldEnemy : BaseEnemy
     {
-        agent.ResetPath();
+        [SerializeField] private Collider shieldCollider;
+
+        protected override void ExecuteBehaviour()
+        {
+            agent.ResetPath();
+        }
+
+        public override bool OnBulletHit(Collider hitCollider)
+        {
+            if (hitCollider == shieldCollider)
+            {
+                Debug.Log("Shield blocked bullet");
+                return false;
+            }
+
+            HandleDeath();
+            return true;
+        }
     }
 }
