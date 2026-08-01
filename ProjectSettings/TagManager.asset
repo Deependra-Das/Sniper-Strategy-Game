@@ -16,7 +16,7 @@ TagManager:
   - PlayerGun
   - Enemy
   - EnemyShield
-  - 
+  - NavMeshGeometry
   - 
   - 
   - 
