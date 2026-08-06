@@ -3531,7 +3531,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _inputActionObj: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  _mainCamera: {fileID: 0}
+  _mainCamera: {fileID: 1821216321}
   _playerCamera: {fileID: 1408021134}
   _scopedFOV: 10
   _cameraPivot: {fileID: 1214605447}
@@ -3689,7 +3689,7 @@ Transform:
   m_GameObject: {fileID: 1408021129}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.92387956, z: 0, w: 0.38268343}
-  m_LocalPosition: {x: 3, y: 0.5, z: 6}
+  m_LocalPosition: {x: 3, y: -0.15, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4657,7 +4657,7 @@ Transform:
   m_GameObject: {fileID: 1821216317}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.92387956, z: 0, w: 0.38268343}
-  m_LocalPosition: {x: 3, y: 0.5, z: 6}
+  m_LocalPosition: {x: 3, y: -0.15, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5500,7 +5500,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: e4e0bf004a6da4548a059c2711f287e4, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
