@@ -18,8 +18,16 @@ namespace SniperStrategyGame.UI.StageSelection
         {
             _stageIndex = stageIndex;
             _sceneName = sceneName;
-            _stageLabel.text = $"Stage {_stageIndex + 1}";
-            _stageButton.onClick.AddListener(OnStageButtonClickedLoadStage);
+
+            if (_stageIndex > 0)
+            {
+                _stageLabel.text = $"Stage {_stageIndex}";
+            }
+            else
+            {
+                _stageLabel.text = "Tutorial";
+            }
+                _stageButton.onClick.AddListener(OnStageButtonClickedLoadStage);
         }
 
         private void OnStageButtonClickedLoadStage()
