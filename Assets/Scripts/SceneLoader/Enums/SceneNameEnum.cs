@@ -7,8 +7,8 @@ namespace SniperStrategyGame.SceneLoader
         Bootstrap,
         MainMenu,
         StageSelection,
+        Tutorial,
         GameplayStage1,
         GameplayStage2,
-        GameplayStage3,
     }
 }
