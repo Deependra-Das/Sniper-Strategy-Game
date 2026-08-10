@@ -37,6 +37,12 @@ namespace SniperStrategyGame.Player
         [SerializeField] private float _bulletSpeed = 50f;
         [SerializeField] private LayerMask _hitMask;
         [SerializeField] private float _boltActionDuration = 1.2f;
+        [SerializeField] private LayerMask _groundMask;
+
+        private Rigidbody _rigidbody;
+        private CapsuleCollider _capsuleCollider;
+        private const float _groundRaycastHeight = 10f;
+        private const float _groundRaycastMaxDistance = 100f;
 
         private InputAction m_lookAction;
         private InputAction m_scopeAction;
@@ -77,6 +83,8 @@ namespace SniperStrategyGame.Player
 
         private void Awake()
         {
+            _rigidbody = GetComponent<Rigidbody>();
+            _capsuleCollider = GetComponent<CapsuleCollider>();
             m_lookAction = InputSystem.actions.FindAction("Look");
             m_scopeAction = InputSystem.actions.FindAction("Scope");
             m_shootAction = InputSystem.actions.FindAction("Shoot");
@@ -85,6 +93,17 @@ namespace SniperStrategyGame.Player
             playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             _bulletServiceObj = GameManager.Instance.Services.Get<BulletService>();
+        }
+
+        private void Start()
+        {
+            SetPlayerCameraTarget();
+        }
+
+        private void SetPlayerCameraTarget()
+        {
+            _playerCamera.Follow = _cameraPivot;
+            _playerCamera.LookAt = _cameraPivot;
         }
 
         private void Update()
@@ -215,7 +234,6 @@ namespace SniperStrategyGame.Player
         private void OnPlayerBulletHitEnemy(PlayerBulletHitEnemyEvent eventObj)
         {
             TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
-            MovePlayerCamera(eventObj.enemyPosition, eventObj.shotDirection);
             SwitchToPlayerCamera();
             RestoreRenderingGun();
         }
@@ -226,29 +244,22 @@ namespace SniperStrategyGame.Player
             RestoreRenderingGun();
         }
 
-        private void TeleportToShotEnemy(Vector3 position, Vector3 rotation)
+        private void TeleportToShotEnemy(Vector3 enemyPosition, Vector3 rotation)
         {
-            Vector3 newPosition = transform.position;
-            newPosition.x = position.x;
-            newPosition.z = position.z;
-
-            transform.position = newPosition;
-
-            Vector3 lookDirection = -rotation;
-            lookDirection.y = 0f;
-
-            if (lookDirection != Vector3.zero)
+            if (!TryGetGroundPosition(enemyPosition, out Vector3 groundPosition))
             {
-                transform.rotation = Quaternion.LookRotation(lookDirection);
-            }         
-        }
+                Debug.LogWarning($"Could not find ground below enemy at {enemyPosition}");
+                return;
+            }
 
-        private void MovePlayerCamera(Vector3 position, Vector3 rotation)
-        {
-            Vector3 newPosition = _playerCamera.transform.position;
-            newPosition.x = position.x;
-            newPosition.z = position.z;
-            _playerCamera.transform.position = newPosition;
+            float groundOffset = GetGroundOffset();
+
+            Vector3 newPosition = new Vector3( enemyPosition.x, groundPosition.y + groundOffset, enemyPosition.z);
+
+            _rigidbody.position = newPosition;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+            Physics.SyncTransforms();
         }
 
         private void StopRenderingGun()
@@ -268,6 +279,26 @@ namespace SniperStrategyGame.Player
 
             _bulletCamera.Priority = 5;
             _playerCamera.Priority = 20;
-        }     
+        }
+
+        private float GetGroundOffset()
+        {
+            float halfHeight = _capsuleCollider.height * 0.5f;
+            return halfHeight - _capsuleCollider.radius - _capsuleCollider.center.y;
+        }
+
+        private bool TryGetGroundPosition(Vector3 worldPosition, out Vector3 groundPosition)
+        {
+            Vector3 rayStart = worldPosition + Vector3.up * _groundRaycastHeight;
+
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, _groundRaycastMaxDistance, _groundMask, QueryTriggerInteraction.Ignore))
+            {
+                groundPosition = hit.point;
+                return true;
+            }
+
+            groundPosition = default;
+            return false;
+        }
     }
 }
