@@ -39,6 +39,7 @@ namespace SniperStrategyGame.Player
         [SerializeField] private float _boltActionDuration = 1.2f;
         [SerializeField] private LayerMask _groundMask;
 
+        [SerializeField] private float _groundCastRadius = 0.5f;
         private Rigidbody _rigidbody;
         private CapsuleCollider _capsuleCollider;
         private const float _groundRaycastHeight = 10f;
@@ -289,9 +290,16 @@ namespace SniperStrategyGame.Player
 
         private bool TryGetGroundPosition(Vector3 worldPosition, out Vector3 groundPosition)
         {
-            Vector3 rayStart = worldPosition + Vector3.up * _groundRaycastHeight;
+            Vector3 sphereOrigin = worldPosition + Vector3.up * _groundRaycastHeight;
 
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, _groundRaycastMaxDistance, _groundMask, QueryTriggerInteraction.Ignore))
+            if (Physics.SphereCast(
+                sphereOrigin,
+                0.5f,
+                Vector3.down,
+                out RaycastHit hit,
+                _groundRaycastMaxDistance,
+                _groundMask,
+                QueryTriggerInteraction.Ignore))
             {
                 groundPosition = hit.point;
                 return true;
