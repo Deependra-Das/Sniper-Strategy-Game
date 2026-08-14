@@ -99,6 +99,7 @@ namespace SniperStrategyGame.Player
         private void Start()
         {
             SetPlayerCameraTarget();
+            SetBulletCameraTarget();
         }
 
         private void SetPlayerCameraTarget()
@@ -106,6 +107,14 @@ namespace SniperStrategyGame.Player
             _playerCamera.Follow = _cameraPivot;
             _playerCamera.LookAt = _cameraPivot;
         }
+
+        private void SetBulletCameraTarget()
+        {
+            _bulletCamera.Follow = _bulletSpawnPoint;
+            _bulletCamera.LookAt = _bulletSpawnPoint;
+            _bulletCamera.transform.position = _bulletSpawnPoint.position;
+        }
+
 
         private void Update()
         {
@@ -202,6 +211,7 @@ namespace SniperStrategyGame.Player
         private void ShootBullet()
         {
             _eventBusServiceObj.Publish(new PlayerBulletFiredEvent());
+
             Ray ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
 
             Vector3 targetPoint;
@@ -215,9 +225,7 @@ namespace SniperStrategyGame.Player
                 targetPoint = ray.GetPoint(_range);
             }
 
-            _bulletCamera.gameObject.transform.position = _bulletSpawnPoint.position;
             Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
-            _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized);
             Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(0f, 0f, 90f);
 
             PlayerBullet bullet = _bulletServiceObj.SpawnPlayerBullet(_bulletSpawnPoint.position, rotation);
@@ -226,12 +234,12 @@ namespace SniperStrategyGame.Player
             ActivateBulletCamera(bullet.transform);
         }
 
-        private void ActivateBulletCamera(Transform target)
+        private void ActivateBulletCamera(Transform bullet)
         {
             StopRenderingGun();
 
-            _bulletCamera.Follow = target;
-            _bulletCamera.LookAt = target;
+            _bulletCamera.Follow = bullet;
+            _bulletCamera.LookAt = bullet;
 
             _playerCamera.Priority = 5;
             _bulletCamera.Priority = 20;
