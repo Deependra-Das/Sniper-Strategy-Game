@@ -16,15 +16,15 @@ namespace SniperStrategyGame.Player
         [Header("Camera")]
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private CinemachineCamera _playerCamera;
+        [SerializeField] private CinemachineCamera _bulletCamera;
         [SerializeField] private float _scopedFOV;
         [SerializeField] private Transform _cameraPivot;
-        [SerializeField] private float _sensitivityX;
-        [SerializeField] private float _sensitivityY;
-        [SerializeField] private float _minPitch;
-        [SerializeField] private float _maxPitch;
-
-        [Header("Bullet Camera")]
-        [SerializeField] private CinemachineCamera _bulletCamera;
+        [SerializeField] private float _freeLookSensitivityX = 100f;
+        [SerializeField] private float _freeLookSensitivityY = 100f;
+        [SerializeField] private float _scopedSensitivityX = 10f;
+        [SerializeField] private float _scopedSensitivityY = 10f;
+        [SerializeField] private float _minPitch = -40f;
+        [SerializeField] private float _maxPitch = 40f;
 
         [Header("Gun")]
         [SerializeField] private Animator _playerGunAnimator;
@@ -38,13 +38,12 @@ namespace SniperStrategyGame.Player
         [SerializeField] private LayerMask _hitMask;
         [SerializeField] private float _boltActionDuration = 1.2f;
         [SerializeField] private LayerMask _groundMask;
-
-        [SerializeField] private float _groundCastRadius = 0.5f;
-        private Rigidbody _rigidbody;
-        private CapsuleCollider _capsuleCollider;
+        [SerializeField] private float _groundSphereCastRadius = 0.5f;
         private const float _groundRaycastHeight = 10f;
         private const float _groundRaycastMaxDistance = 100f;
 
+        private Rigidbody _rigidbody;
+        private CapsuleCollider _capsuleCollider;
         private InputAction m_lookAction;
         private InputAction m_scopeAction;
         private InputAction m_shootAction;
@@ -53,6 +52,7 @@ namespace SniperStrategyGame.Player
         private float _pitch;
         private bool _isScoped = false;
         private bool _canShoot = false;
+        private bool _canLook = true;
         private float _normalFOV;
         private int playerGunLayerMask;
         private EventBusService _eventBusServiceObj;
@@ -116,10 +116,15 @@ namespace SniperStrategyGame.Player
 
         private void Look()
         {
+            if (!_canLook) return;
+
             m_lookAmt = m_lookAction.ReadValue<Vector2>();
 
-            _yaw += m_lookAmt.x * _sensitivityX * Time.deltaTime;
-            _pitch -= m_lookAmt.y * _sensitivityY * Time.deltaTime;
+            float sensitivityX = _isScoped ? _scopedSensitivityX : _freeLookSensitivityX;
+            float sensitivityY = _isScoped ? _scopedSensitivityY : _freeLookSensitivityY;
+
+            _yaw += m_lookAmt.x * sensitivityX * Time.deltaTime;
+            _pitch -= m_lookAmt.y * sensitivityY * Time.deltaTime;
             _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
 
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
@@ -186,7 +191,7 @@ namespace SniperStrategyGame.Player
         private IEnumerator ShootRoutine()
         {
             _canShoot = false;
-
+            _canLook = false;
             yield return new WaitForSeconds(0.05f);
             DisableScope();
             ShootBullet();
@@ -234,23 +239,28 @@ namespace SniperStrategyGame.Player
 
         private void OnPlayerBulletHitEnemy(PlayerBulletHitEnemyEvent eventObj)
         {
-            TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+            bool hasTeleported = TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+
             SwitchToPlayerCamera();
             RestoreRenderingGun();
+
+            if (hasTeleported)
+                _canLook = true;
         }
 
         private void OnPlayerBulletMissedEnemyEvent(PlayerBulletMissedEnemyEvent eventObj)
         {
             SwitchToPlayerCamera();
             RestoreRenderingGun();
+            _canLook = true;
         }
 
-        private void TeleportToShotEnemy(Vector3 enemyPosition, Vector3 rotation)
+        private bool TeleportToShotEnemy(Vector3 enemyPosition, Vector3 rotation)
         {
             if (!TryGetGroundPosition(enemyPosition, out Vector3 groundPosition))
             {
                 Debug.LogWarning($"Could not find ground below enemy at {enemyPosition}");
-                return;
+                return false;
             }
 
             float groundOffset = GetGroundOffset();
@@ -261,6 +271,8 @@ namespace SniperStrategyGame.Player
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
             Physics.SyncTransforms();
+
+            return true;
         }
 
         private void StopRenderingGun()
@@ -292,14 +304,7 @@ namespace SniperStrategyGame.Player
         {
             Vector3 sphereOrigin = worldPosition + Vector3.up * _groundRaycastHeight;
 
-            if (Physics.SphereCast(
-                sphereOrigin,
-                0.5f,
-                Vector3.down,
-                out RaycastHit hit,
-                _groundRaycastMaxDistance,
-                _groundMask,
-                QueryTriggerInteraction.Ignore))
+            if (Physics.SphereCast( sphereOrigin, _groundSphereCastRadius, Vector3.down, out RaycastHit hit, _groundRaycastMaxDistance, _groundMask, QueryTriggerInteraction.Ignore))
             {
                 groundPosition = hit.point;
                 return true;
