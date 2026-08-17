@@ -53,6 +53,7 @@ namespace SniperStrategyGame.Player
         private bool _isScoped = false;
         private bool _canShoot = false;
         private bool _canLook = true;
+        private bool _canTeleport = false;
         private float _normalFOV;
         private int playerGunLayerMask;
         private EventBusService _eventBusServiceObj;
@@ -74,12 +75,14 @@ namespace SniperStrategyGame.Player
         {
             _eventBusServiceObj.Subscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
+            _eventBusServiceObj.Subscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
         }
 
         protected virtual void UnsubscribeToEvents()
         {
             _eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
+            _eventBusServiceObj.Unsubscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
         }
 
         private void Awake()
@@ -247,13 +250,14 @@ namespace SniperStrategyGame.Player
 
         private void OnPlayerBulletHitEnemy(PlayerBulletHitEnemyEvent eventObj)
         {
-            bool hasTeleported = TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+            if (_canTeleport)
+            {
+               TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+            }
 
             SwitchToPlayerCamera();
             RestoreRenderingGun();
-
-            if (hasTeleported)
-                _canLook = true;
+            _canLook = true;
         }
 
         private void OnPlayerBulletMissedEnemyEvent(PlayerBulletMissedEnemyEvent eventObj)
@@ -261,6 +265,11 @@ namespace SniperStrategyGame.Player
             SwitchToPlayerCamera();
             RestoreRenderingGun();
             _canLook = true;
+        }
+
+        private void OnActivatePlayerTeleportAbilityEvent(ActivatePlayerTeleportAbilityEvent eventObj)
+        {
+            _canTeleport = true;
         }
 
         private bool TeleportToShotEnemy(Vector3 enemyPosition, Vector3 rotation)
