@@ -116,6 +116,7 @@ namespace SniperStrategyGame.Player
             _bulletCamera.Follow = _bulletSpawnPoint;
             _bulletCamera.LookAt = _bulletSpawnPoint;
             _bulletCamera.transform.position = _bulletSpawnPoint.position;
+            _bulletCamera.transform.rotation = _bulletSpawnPoint.rotation;
         }
 
 
@@ -239,8 +240,12 @@ namespace SniperStrategyGame.Player
 
         private void ActivateBulletCamera(Transform bullet)
         {
-            StopRenderingGun();
+            if (!_canTeleport)
+            {
+                SetBulletCameraTarget();
+            }
 
+            StopRenderingGun();
             _bulletCamera.Follow = bullet;
             _bulletCamera.LookAt = bullet;
 
@@ -309,6 +314,17 @@ namespace SniperStrategyGame.Player
 
             _bulletCamera.Priority = 5;
             _playerCamera.Priority = 20;
+
+            if (_canTeleport)
+            {
+                StartCoroutine(ResetBulletCameraNextFrame());
+            }
+        }
+
+        private IEnumerator ResetBulletCameraNextFrame()
+        {
+            yield return null;
+            SetBulletCameraTarget();
         }
 
         private float GetGroundOffset()
