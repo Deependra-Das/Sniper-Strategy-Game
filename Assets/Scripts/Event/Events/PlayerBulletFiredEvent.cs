@@ -1,3 +1,6 @@
 using UnityEngine;
 
-public class PlayerBulletFiredEvent { }
+namespace SniperStrategyGame.Event
+{
+    public class PlayerBulletFiredEvent { }
+}

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public struct ActivateEnemiesEvent
-{
-    
+namespace SniperStrategyGame.Event
+{ 
+    public struct ActivateEnemiesEvent{ }
 }
