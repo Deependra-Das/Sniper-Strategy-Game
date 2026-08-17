@@ -17,6 +17,7 @@ namespace SniperStrategyGame.Gameplay
 
         private Dictionary<EnemyTypeEnum, BaseEnemy> _enemyPrefabLookup;
         private readonly List<BaseEnemy> _aliveEnemies = new();
+        private EventBusService _eventBusServiceObj;
 
         private void Awake()
         {
@@ -41,7 +42,10 @@ namespace SniperStrategyGame.Gameplay
 
         private void Start()
         {
+            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             SpawnEnemies();
+            RaiseActivateEnemiesEvent();
+            RaiseActivatePlayerTeleportAbilityEvent();
         }
 
         private void SpawnEnemies()
@@ -49,8 +53,6 @@ namespace SniperStrategyGame.Gameplay
             SpawnEnemyGroup(EnemyTypeEnum.Guard, _guardSpawnPointList);
             SpawnEnemyGroup(EnemyTypeEnum.Shield, _shieldSpawnPointList);
             SpawnEnemyGroup(EnemyTypeEnum.Patrol, _patrolSpawnPointList);
-
-            GameManager.Instance.Services.Get<EventBusService>().Publish(new ActivateEnemiesEvent());
         }
 
         private void SpawnEnemyGroup(EnemyTypeEnum enemyType, List<Transform> spawnPointList)
@@ -73,8 +75,7 @@ namespace SniperStrategyGame.Gameplay
                 }
 
                 _aliveEnemies.Add(enemy);
-
-                GameManager.Instance.Services.Get<EventBusService>().Publish(new EnemySpawnedEvent(enemy));
+                RaiseEnemySpawnedEvent(enemy);
             }
         }
 
@@ -105,6 +106,21 @@ namespace SniperStrategyGame.Gameplay
         private void StageCompleted()
         {
             Debug.Log("Stage Complete");
+        }
+
+        private void RaiseEnemySpawnedEvent(BaseEnemy enemy)
+        {
+            _eventBusServiceObj.Publish(new EnemySpawnedEvent(enemy));
+        }
+
+        private void RaiseActivateEnemiesEvent()
+        {
+            _eventBusServiceObj.Publish(new ActivateEnemiesEvent());
+        }
+
+        private void RaiseActivatePlayerTeleportAbilityEvent()
+        {
+            _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
         }
     }
 }
