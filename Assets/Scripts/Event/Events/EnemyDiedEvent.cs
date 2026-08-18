@@ -1,4 +1,3 @@
-using UnityEngine;
 using SniperStrategyGame.Enemy;
 
 namespace SniperStrategyGame.Event
