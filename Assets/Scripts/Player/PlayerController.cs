@@ -119,7 +119,6 @@ namespace SniperStrategyGame.Player
             _bulletCamera.transform.rotation = _bulletSpawnPoint.rotation;
         }
 
-
         private void Update()
         {
             Look();
@@ -160,6 +159,7 @@ namespace SniperStrategyGame.Player
             _isScoped = true;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             StartCoroutine(ActivateScopeRoutine());
+            _eventBusServiceObj.Publish(new PlayerScopeInEvent());
         }
 
         private void DisableScope()
@@ -167,6 +167,7 @@ namespace SniperStrategyGame.Player
             _isScoped = false;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             HandleScopeDeactivation();
+            _eventBusServiceObj.Publish(new PlayerScopeOutEvent());
         }
 
         private IEnumerator ActivateScopeRoutine()
@@ -199,6 +200,7 @@ namespace SniperStrategyGame.Player
                 return;
 
             StartCoroutine(ShootRoutine());
+            _eventBusServiceObj.Publish(new PlayerShotEvent());
         }
 
         private IEnumerator ShootRoutine()
