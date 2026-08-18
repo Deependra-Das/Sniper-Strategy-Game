@@ -14,7 +14,6 @@ namespace SniperStrategyGame.Enemy
         protected NavMeshAgent agent;
         private Coroutine _behaviourLoopCoroutine;
         private bool _isActive;
-        protected GameplayManager gameplayManagerObj;
         protected EventBusService eventBusServiceObj;
 
         private void Awake()
@@ -37,9 +36,8 @@ namespace SniperStrategyGame.Enemy
             eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletImpact);
         }
 
-        public void Initialize(GameplayManager gameplayManagerObj)
+        public void Initialize()
         {
-            this.gameplayManagerObj = gameplayManagerObj;
             eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             SubscribeToEvents();
             SetActive(false);
@@ -112,7 +110,7 @@ namespace SniperStrategyGame.Enemy
         protected virtual void HandleDeath()
         {
             Cleanup();
-            gameplayManagerObj.EnemyDied(this);
+            eventBusServiceObj.Publish(new EnemyDiedEvent(this));
         }
 
         protected virtual void Cleanup()

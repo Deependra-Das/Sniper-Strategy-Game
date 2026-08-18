@@ -19,12 +19,23 @@ namespace SniperStrategyGame.Gameplay
         private EventBusService _eventBusServiceObj;
         private EnemyService _enemyServiceObj;
 
+        private void SubscribeToEvents()
+        {
+            _eventBusServiceObj.Subscribe<EnemyDiedEvent>(OnEnemyDied);
+        }
+
+        private void UnsubscribeToEvents()
+        {
+            _eventBusServiceObj.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
+        }
+
         private void Start()
         {
             var services = GameManager.Instance.Services;
             _eventBusServiceObj = services.Get<EventBusService>();
             _enemyServiceObj = services.Get<EnemyService>();
 
+            SubscribeToEvents();
             SpawnEnemies();
             RaiseActivateEnemiesEvent();
             RaiseActivatePlayerTeleportAbilityEvent();
@@ -49,7 +60,7 @@ namespace SniperStrategyGame.Gameplay
                 Transform spawnPoint = spawnPointList[j];
 
                 BaseEnemy enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
-                enemy.Initialize(this);
+                enemy.Initialize();
 
                 if (enemy is PatrolEnemy patrolEnemy)
                 {
@@ -72,12 +83,12 @@ namespace SniperStrategyGame.Gameplay
             return _patrolPathList[index];
         }
 
-        public void EnemyDied(BaseEnemy enemy)
+        private void OnEnemyDied(EnemyDiedEvent eventObj)
         {
-            if (!_aliveEnemies.Remove(enemy))
+            if (!_aliveEnemies.Remove(eventObj.Enemy))
                 return;
 
-            Destroy(enemy.gameObject);
+            Destroy(eventObj.Enemy.gameObject);
 
             if (_aliveEnemies.Count == 0)
             {
@@ -103,6 +114,11 @@ namespace SniperStrategyGame.Gameplay
         private void RaiseActivatePlayerTeleportAbilityEvent()
         {
             _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeToEvents();
         }
     }
 }
