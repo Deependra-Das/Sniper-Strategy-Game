@@ -3781,6 +3781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShieldEnemy
   behaviourLoopInterval: 0.1
+  enemyType: 2
   shieldCollider: {fileID: 6684879863873218413}
 --- !u!1 &8720901373227860788
 GameObject:

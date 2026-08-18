@@ -10,6 +10,9 @@ namespace SniperStrategyGame.Enemy
     public abstract class BaseEnemy : MonoBehaviour
     {
         [SerializeField] protected float behaviourLoopInterval = 0.1f;
+        [SerializeField] protected EnemyTypeEnum enemyType;
+
+        public EnemyTypeEnum EnemyType => enemyType;
         protected Animator animator;
         protected NavMeshAgent agent;
         private Coroutine _behaviourLoopCoroutine;

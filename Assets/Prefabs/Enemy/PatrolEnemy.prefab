@@ -2320,6 +2320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PatrolEnemy
   behaviourLoopInterval: 0.1
+  enemyType: 1
   waitTimeOnWayPoint: 5
 --- !u!1 &6766536238452530525
 GameObject:
