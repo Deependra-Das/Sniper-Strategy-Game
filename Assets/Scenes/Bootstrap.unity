@@ -277,6 +277,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Main.GameManager
   _sceneLoadDelay: 1
   _bulletPrefab: {fileID: 8865872058904107795, guid: 4b9f85daef0cb8a4b9fdd5e093d62d58, type: 3}
+  _enemySO: {fileID: 11400000, guid: 348fe389a7803ec46bce3611930b7c41, type: 2}
 --- !u!4 &571237822
 Transform:
   m_ObjectHideFlags: 0
