@@ -9,40 +9,22 @@ namespace SniperStrategyGame.Gameplay
 {
     public class GameplayManager : MonoBehaviour
     {
-        [SerializeField] private Enemy_SO _enemySO;
         [SerializeField] private List<Transform> _guardSpawnPointList;
         [SerializeField] private List<Transform> _patrolSpawnPointList;
         [SerializeField] private List<Transform> _shieldSpawnPointList;
         [SerializeField] private List<PatrolPath> _patrolPathList;
 
-        private Dictionary<EnemyTypeEnum, BaseEnemy> _enemyPrefabLookup;
+
         private readonly List<BaseEnemy> _aliveEnemies = new();
         private EventBusService _eventBusServiceObj;
-
-        private void Awake()
-        {
-            CreateEnemyLookup();
-        }
-
-        private void CreateEnemyLookup()
-        {
-            _enemyPrefabLookup = new Dictionary<EnemyTypeEnum, BaseEnemy>();
-
-            foreach (var enemyData in _enemySO.enemyDataList)
-            {
-                if (_enemyPrefabLookup.ContainsKey(enemyData.enemyType))
-                {
-                    Debug.LogError($"Duplicate enemy type: {enemyData.enemyType}");
-                    continue;
-                }
-
-                _enemyPrefabLookup.Add(enemyData.enemyType, enemyData.enemyPrefab);
-            }
-        }
+        private EnemyService _enemyServiceObj;
 
         private void Start()
         {
-            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+            var services = GameManager.Instance.Services;
+            _eventBusServiceObj = services.Get<EventBusService>();
+            _enemyServiceObj = services.Get<EnemyService>();
+
             SpawnEnemies();
             RaiseActivateEnemiesEvent();
             RaiseActivatePlayerTeleportAbilityEvent();
@@ -57,7 +39,7 @@ namespace SniperStrategyGame.Gameplay
 
         private void SpawnEnemyGroup(EnemyTypeEnum enemyType, List<Transform> spawnPointList)
         {
-            if (!_enemyPrefabLookup.TryGetValue(enemyType, out BaseEnemy enemyPrefab))
+            if (!_enemyServiceObj.TryGetEnemyPrefab(enemyType, out BaseEnemy enemyPrefab))
             {
                 Debug.LogError($"Missing prefab for {enemyType}");
                 return;
