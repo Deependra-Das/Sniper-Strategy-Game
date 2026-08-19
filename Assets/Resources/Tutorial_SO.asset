@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Tutorial_SO
   m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Tutorial.Tutorial_SO
   tutorialStepsList:
+  - tutorialAction: 1
+    requiredEnemyTypeList: 
+    title: 
+    description: 
+    instruction: 
   - tutorialAction: 2
     requiredEnemyTypeList: 
     title: 
@@ -24,7 +29,27 @@ MonoBehaviour:
     description: 
     instruction: 
   - tutorialAction: 4
-    requiredEnemyTypeList: 
+    requiredEnemyTypeList: 00000000
+    title: 
+    description: 
+    instruction: 
+  - tutorialAction: 5
+    requiredEnemyTypeList: 01000000
+    title: 
+    description: 
+    instruction: 
+  - tutorialAction: 6
+    requiredEnemyTypeList: 02000000
+    title: 
+    description: 
+    instruction: 
+  - tutorialAction: 7
+    requiredEnemyTypeList: 0200000001000000
+    title: 
+    description: 
+    instruction: 
+  - tutorialAction: 8
+    requiredEnemyTypeList: 01000000
     title: 
     description: 
     instruction: 
