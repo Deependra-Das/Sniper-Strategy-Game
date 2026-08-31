@@ -28,7 +28,6 @@ namespace SniperStrategyGame.Player
 
         [Header("Gun")]
         [SerializeField] private Animator _playerGunAnimator;
-        [SerializeField] private GameObject _scopeOverlay;
         [SerializeField] private float _scopeDuration;
 
         [Header("Shooting")]
@@ -159,7 +158,6 @@ namespace SniperStrategyGame.Player
             _isScoped = true;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             StartCoroutine(ActivateScopeRoutine());
-            _eventBusServiceObj.Publish(new PlayerScopeInEvent());
         }
 
         private void DisableScope()
@@ -167,25 +165,24 @@ namespace SniperStrategyGame.Player
             _isScoped = false;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             HandleScopeDeactivation();
-            _eventBusServiceObj.Publish(new PlayerScopeOutEvent());
         }
 
         private IEnumerator ActivateScopeRoutine()
         {
             yield return new WaitForSeconds(_scopeDuration);
-            _scopeOverlay.SetActive(true);
             StopRenderingGun();
             _normalFOV = _playerCamera.Lens.FieldOfView;
             _playerCamera.Lens.FieldOfView = _scopedFOV;
             _canShoot = true;
+            _eventBusServiceObj.Publish(new PlayerScopeInEvent());
         }
 
         private void HandleScopeDeactivation()
         {
-            _scopeOverlay.SetActive(false);
             RestoreRenderingGun();
             _playerCamera.Lens.FieldOfView = _normalFOV;
             _canShoot = false;
+            _eventBusServiceObj.Publish(new PlayerScopeOutEvent());
         }
 
         private void HandleShootingInput()
