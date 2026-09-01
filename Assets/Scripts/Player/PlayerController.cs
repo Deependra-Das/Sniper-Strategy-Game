@@ -19,12 +19,12 @@ namespace SniperStrategyGame.Player
         [SerializeField] private CinemachineCamera _bulletCamera;
         [SerializeField] private float _scopedFOV;
         [SerializeField] private Transform _cameraPivot;
-        [SerializeField] private float _freeLookSensitivityX = 100f;
-        [SerializeField] private float _freeLookSensitivityY = 100f;
-        [SerializeField] private float _scopedSensitivityX = 10f;
-        [SerializeField] private float _scopedSensitivityY = 10f;
-        [SerializeField] private float _minPitch = -40f;
-        [SerializeField] private float _maxPitch = 40f;
+        [SerializeField] private float _freeLookSensitivityX = 0.1f;
+        [SerializeField] private float _freeLookSensitivityY = 0.1f;
+        [SerializeField] private float _scopedSensitivityX = 0.025f;
+        [SerializeField] private float _scopedSensitivityY = 0.025f;
+        [SerializeField] private float _minPitch = -20f;
+        [SerializeField] private float _maxPitch = 10f;
 
         [Header("Gun")]
         [SerializeField] private Animator _playerGunAnimator;
@@ -43,16 +43,18 @@ namespace SniperStrategyGame.Player
 
         private Rigidbody _rigidbody;
         private CapsuleCollider _capsuleCollider;
-        private InputAction m_lookAction;
-        private InputAction m_scopeAction;
-        private InputAction m_shootAction;
-        private Vector2 m_lookAmt;
+
+        private InputActionMap _playerActionMap;
+        private InputAction _lookAction;
+        private InputAction _scopeAction;
+        private InputAction _shootAction;
         private float _yaw;
         private float _pitch;
         private bool _isScoped = false;
         private bool _canShoot = false;
         private bool _canLook = true;
         private bool _canTeleport = false;
+        private Coroutine _scopeCoroutine;
         private float _normalFOV;
         private int playerGunLayerMask;
         private EventBusService _eventBusServiceObj;
@@ -60,14 +62,14 @@ namespace SniperStrategyGame.Player
 
         private void OnEnable()
         {
-            _inputActionObj.FindActionMap("Player").Enable();
+            EnableInput();
             SubscribeToEvents();
         }
 
         private void OnDisable()
         {
-            _inputActionObj.FindActionMap("Player").Disable();
-            UnsubscribeToEvents();
+            DisableInput();
+            UnsubscribeFromEvents();
         }
 
         protected virtual void SubscribeToEvents()
@@ -77,7 +79,7 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Subscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
         }
 
-        protected virtual void UnsubscribeToEvents()
+        protected virtual void UnsubscribeFromEvents()
         {
             _eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
@@ -88,20 +90,22 @@ namespace SniperStrategyGame.Player
         {
             _rigidbody = GetComponent<Rigidbody>();
             _capsuleCollider = GetComponent<CapsuleCollider>();
-            m_lookAction = InputSystem.actions.FindAction("Look");
-            m_scopeAction = InputSystem.actions.FindAction("Scope");
-            m_shootAction = InputSystem.actions.FindAction("Shoot");
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+
+            InitializeInput();
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             _bulletServiceObj = GameManager.Instance.Services.Get<BulletService>();
+
+            playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
         }
 
         private void Start()
         {
             SetPlayerCameraTarget();
             SetBulletCameraTarget();
+            _normalFOV = _playerCamera.Lens.FieldOfView;
         }
 
         private void SetPlayerCameraTarget()
@@ -118,51 +122,109 @@ namespace SniperStrategyGame.Player
             _bulletCamera.transform.rotation = _bulletSpawnPoint.rotation;
         }
 
-        private void Update()
+        private void InitializeInput()
         {
-            Look();
-            HandleGunScopeInput();
-            HandleShootingInput();
+            _playerActionMap =
+                _inputActionObj.FindActionMap("Player");
+
+            _lookAction =
+                _playerActionMap.FindAction("Look");
+
+            _scopeAction =
+                _playerActionMap.FindAction("Scope");
+
+            _shootAction =
+                _playerActionMap.FindAction("Shoot");
         }
 
-        private void Look()
+        private void EnableInput()
+        {
+            _playerActionMap.Enable();
+
+            _lookAction.performed += OnLookPerformed;
+            _scopeAction.performed += OnScopePerformed;
+            _shootAction.performed += OnShootPerformed;
+        }
+
+
+        private void DisableInput()
+        {
+            _lookAction.performed -= OnLookPerformed;
+            _scopeAction.performed -= OnScopePerformed;
+            _shootAction.performed -= OnShootPerformed;
+
+            _playerActionMap.Disable();
+        }
+
+        private void OnLookPerformed(InputAction.CallbackContext context)
         {
             if (!_canLook) return;
 
-            m_lookAmt = m_lookAction.ReadValue<Vector2>();
-
+            Vector2 lookAmount = context.ReadValue<Vector2>();
             float sensitivityX = _isScoped ? _scopedSensitivityX : _freeLookSensitivityX;
             float sensitivityY = _isScoped ? _scopedSensitivityY : _freeLookSensitivityY;
-
-            _yaw += m_lookAmt.x * sensitivityX * Time.deltaTime;
-            _pitch -= m_lookAmt.y * sensitivityY * Time.deltaTime;
+            _yaw += lookAmount.x * sensitivityX;
+            _pitch -= lookAmount.y * sensitivityY;
             _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
 
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
             _cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
 
-        private void HandleGunScopeInput()
+        private void OnScopePerformed(InputAction.CallbackContext context)
         {
-            if (!m_scopeAction.WasPressedThisFrame())
-                return;
-
             if (_isScoped)
-                DisableScope();
+                TryScopeOut();
             else
-                EnableScope();
+                TryScopeIn();
+        }
+
+        private void OnShootPerformed(InputAction.CallbackContext context)
+        {
+            TryShoot();
+        }
+
+        public void TryScopeIn()
+        {
+            if (_isScoped) return;
+
+            EnableScope();
+        }
+
+        public void TryScopeOut()
+        {
+            if (!_isScoped) return;
+
+            DisableScope();
+        }
+
+        public void TryShoot()
+        {
+            if (!_canShoot) return;
+
+            if (!_isScoped) return;
+
+            StartCoroutine(ShootRoutine());
+            _eventBusServiceObj.Publish(new PlayerShotEvent());
         }
 
         private void EnableScope()
         {
             _isScoped = true;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
-            StartCoroutine(ActivateScopeRoutine());
+            _scopeCoroutine = StartCoroutine(ActivateScopeRoutine());
         }
 
         private void DisableScope()
         {
             _isScoped = false;
+
+            if (_scopeCoroutine != null)
+            {
+                StopCoroutine(_scopeCoroutine);
+                _scopeCoroutine = null;
+            }
+
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             HandleScopeDeactivation();
         }
@@ -170,11 +232,14 @@ namespace SniperStrategyGame.Player
         private IEnumerator ActivateScopeRoutine()
         {
             yield return new WaitForSeconds(_scopeDuration);
+
+            if (!_isScoped) yield break;
+
             StopRenderingGun();
-            _normalFOV = _playerCamera.Lens.FieldOfView;
             _playerCamera.Lens.FieldOfView = _scopedFOV;
             _canShoot = true;
             _eventBusServiceObj.Publish(new PlayerScopeInEvent());
+            _scopeCoroutine = null;
         }
 
         private void HandleScopeDeactivation()
@@ -183,21 +248,6 @@ namespace SniperStrategyGame.Player
             _playerCamera.Lens.FieldOfView = _normalFOV;
             _canShoot = false;
             _eventBusServiceObj.Publish(new PlayerScopeOutEvent());
-        }
-
-        private void HandleShootingInput()
-        {
-            if (!_canShoot)
-                return;
-
-            if (!_isScoped)
-                return;
-
-            if (!m_shootAction.WasPressedThisFrame())
-                return;
-
-            StartCoroutine(ShootRoutine());
-            _eventBusServiceObj.Publish(new PlayerShotEvent());
         }
 
         private IEnumerator ShootRoutine()

@@ -131,15 +131,16 @@ MonoBehaviour:
   _inputActionObj: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _mainCamera: {fileID: 0}
   _playerCamera: {fileID: 0}
+  _bulletCamera: {fileID: 0}
   _scopedFOV: 10
   _cameraPivot: {fileID: 2731091710297528261}
-  _sensitivityX: 100
-  _sensitivityY: 100
+  _freeLookSensitivityX: 0.1
+  _freeLookSensitivityY: 0.1
+  _scopedSensitivityX: 0.025
+  _scopedSensitivityY: 0.025
   _minPitch: -20
   _maxPitch: 10
-  _bulletCamera: {fileID: 0}
   _playerGunAnimator: {fileID: 7985496070092565594}
-  _scopeOverlay: {fileID: 0}
   _scopeDuration: 0.15
   _bulletSpawnPoint: {fileID: 8097302596358081017}
   _range: 100
@@ -151,7 +152,7 @@ MonoBehaviour:
   _groundMask:
     serializedVersion: 2
     m_Bits: 512
-  _groundCastRadius: 0.5
+  _groundSphereCastRadius: 0.5
 --- !u!1 &5963038823949599662
 GameObject:
   m_ObjectHideFlags: 0
