@@ -13,13 +13,11 @@ namespace SniperStrategyGame.Tutorial
         [Header("Enemies Required For This Step")]
         public List<EnemyTypeEnum> requiredEnemyTypeList;
 
-        [Header("UI")]
-        public string title;
-
-        [TextArea(3, 6)]
-        public string description;
-
         [TextArea(2, 4)]
         public string instruction;
+
+        [Header("Input")]
+        [Tooltip("Optional button/key map icon displayed with the instruction.")]
+        public Sprite instructionButtonMapSprite;
     }
 }
