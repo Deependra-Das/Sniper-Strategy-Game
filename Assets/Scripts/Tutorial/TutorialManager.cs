@@ -1,11 +1,9 @@
+using UnityEngine;
+using System.Collections.Generic;
 using SniperStrategyGame.Enemy;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Path;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace SniperStrategyGame.Tutorial
 {
@@ -18,7 +16,11 @@ namespace SniperStrategyGame.Tutorial
         [SerializeField] private List<PatrolPath> _patrolPathList;
 
         private readonly List<BaseEnemy> _aliveEnemies = new();
-        private int _currentTutorialStepIndex = 0;
+        private readonly List<BaseEnemy> _currentStepEnemies = new();
+
+        private int _currentTutorialGroupIndex;
+        private int _currentTutorialStepIndex;
+
         private EventBusService _eventBusServiceObj;
         private EnemyService _enemyServiceObj;
 
@@ -63,25 +65,38 @@ namespace SniperStrategyGame.Tutorial
 
         private void StartTutorial()
         {
+            _currentTutorialGroupIndex = 0;
             _currentTutorialStepIndex = 0;
+            _aliveEnemies.Clear();
+            _currentStepEnemies.Clear();
             ExecuteCurrentTutorialStep();
         }
 
         private void ExecuteCurrentTutorialStep()
         {
-            TutorialStepData step = GetCurrentTutorialStep();
+            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
 
-            if (step == null)
+            if (currentGroup == null)
             {
                 TutorialCompleted();
                 return;
             }
 
-            Debug.Log($"Starting tutorial step: {step.tutorialAction}");
+            TutorialStepData currentStep = GetCurrentTutorialStep();
 
-            if (step.requiredEnemyTypeList.Count > 0)
+            if (currentStep == null)
             {
-                foreach (EnemyTypeEnum enemyType in step.requiredEnemyTypeList)
+                AdvanceToNextGroup();
+                return;
+            }
+
+            Debug.Log($"Starting Tutorial Group: {currentGroup.tutorialGroupName} | Step: {_currentTutorialStepIndex} | Action: {currentStep.tutorialAction}");
+
+            _currentStepEnemies.Clear();
+
+            if (currentStep.requiredEnemyTypeList.Count > 0)
+            {
+                foreach (EnemyTypeEnum enemyType in currentStep.requiredEnemyTypeList)
                 {
                     SpawnEnemyGroup(enemyType);
                 }
@@ -98,13 +113,20 @@ namespace SniperStrategyGame.Tutorial
 
             List<Transform> spawnPointList = GetSpawnPointTransformListByEnemyType(enemyType);
 
-            if (spawnPointList.Count <= 0) return;
+            if (spawnPointList == null || spawnPointList.Count <= 0)
+            {
+                Debug.LogWarning($"No spawn points configured for {enemyType}");
+                return;
+            }
 
             for (int j = 0; j < spawnPointList.Count; j++)
             {
                 Transform spawnPoint = spawnPointList[j];
 
+                if (spawnPoint == null) continue;
+
                 BaseEnemy enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+
                 enemy.Initialize();
 
                 if (enemy is PatrolEnemy patrolEnemy)
@@ -113,15 +135,17 @@ namespace SniperStrategyGame.Tutorial
                 }
 
                 _aliveEnemies.Add(enemy);
+                _currentStepEnemies.Add(enemy);
+
                 RaiseEnemySpawnedEvent(enemy);
             }
         }
 
         private PatrolPath GetPatrolPath(int index)
         {
-            if (index >= _patrolPathList.Count)
+            if (index < 0 || index >= _patrolPathList.Count)
             {
-                Debug.LogWarning("Missing patrol path");
+                Debug.LogWarning($"Missing patrol path for index {index}");
                 return null;
             }
 
@@ -130,26 +154,48 @@ namespace SniperStrategyGame.Tutorial
 
         private List<Transform> GetSpawnPointTransformListByEnemyType(EnemyTypeEnum enemyType)
         {
-            List <Transform> spawnPointList = new(); 
-            switch (enemyType)
+            return enemyType switch
             {
-                case EnemyTypeEnum.Guard:
-                    spawnPointList = _guardSpawnPointList;
-                    break;
-                case EnemyTypeEnum.Shield:
-                    spawnPointList = _shieldSpawnPointList;
-                    break;
-                case EnemyTypeEnum.Patrol:
-                    spawnPointList = _patrolSpawnPointList;
-                    break;
-            }
+                EnemyTypeEnum.Guard => _guardSpawnPointList,
+                EnemyTypeEnum.Shield => _shieldSpawnPointList,
+                EnemyTypeEnum.Patrol => _patrolSpawnPointList,
 
-            return spawnPointList;
+                _ => null
+            };
         }
 
         private void AdvanceTutorial()
         {
             _currentTutorialStepIndex++;
+
+            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
+
+            if (currentGroup != null && _currentTutorialStepIndex < currentGroup.tutorialStepsList.Count)
+            {
+                ExecuteCurrentTutorialStep();
+                return;
+            }
+
+            AdvanceToNextGroup();
+        }
+
+        private void AdvanceToNextGroup()
+        {
+            _currentTutorialGroupIndex++;
+            _currentTutorialStepIndex = 0;
+
+            _currentStepEnemies.Clear();
+
+            TutorialGroupData nextGroup = GetCurrentTutorialGroup();
+
+            if (nextGroup == null)
+            {
+                TutorialCompleted();
+                return;
+            }
+
+            Debug.Log($"Tutorial Group Completed. Starting: {nextGroup.tutorialGroupName}");
+
             ExecuteCurrentTutorialStep();
         }
 
@@ -160,61 +206,79 @@ namespace SniperStrategyGame.Tutorial
 
         private void OnScopeIn(PlayerScopeInEvent eventObj)
         {
-            if (!IsCurrentAction(TutorialActionEnum.ScopeIn))
-                return;
+            if (!IsCurrentAction(TutorialActionEnum.ScopeIn)) return;
 
             AdvanceTutorial();
         }
 
         private void OnScopeOut(PlayerScopeOutEvent eventObj)
         {
-            if (!IsCurrentAction(TutorialActionEnum.ScopeOut))
-                return;
+            if (!IsCurrentAction(TutorialActionEnum.ScopeOut)) return;
 
             AdvanceTutorial();
         }
 
         private void OnPlayerShot(PlayerShotEvent eventObj)
         {
-            if (!IsCurrentAction(TutorialActionEnum.Shoot))
-                return;
+            if (!IsCurrentAction(TutorialActionEnum.Shoot)) return;
 
             AdvanceTutorial();
         }
 
         private void OnEnemyDied(EnemyDiedEvent eventObj)
         {
-            if (!_aliveEnemies.Remove(eventObj.Enemy))
-                return;
+            if (eventObj.Enemy == null) return;
+
+            if (!_aliveEnemies.Remove(eventObj.Enemy)) return;
+
+            _currentStepEnemies.Remove(eventObj.Enemy);
 
             Destroy(eventObj.Enemy.gameObject);
 
             TutorialStepData currentStep = GetCurrentTutorialStep();
 
-            if (currentStep == null)
-                return;
+            if (currentStep == null) return;
 
             if (!TryGetRequiredEnemyType(currentStep.tutorialAction, out EnemyTypeEnum requiredEnemyType))
             {
                 return;
             }
 
-            if (eventObj.Enemy.EnemyType != requiredEnemyType)
-                return;
+            if (eventObj.Enemy.EnemyType != requiredEnemyType) return;
+
+            if (_currentStepEnemies.Count > 0) return;
 
             AdvanceTutorial();
         }
 
-        private TutorialStepData GetCurrentTutorialStep()
+        private TutorialGroupData GetCurrentTutorialGroup()
         {
-            if (_currentTutorialStepIndex >=
-                _tutorialSequenceSO.tutorialStepsList.Count)
+            if (_tutorialSequenceSO == null)
+            {
+                Debug.LogError("Tutorial SO is not assigned.");
+                return null;
+            }
+
+            if (_currentTutorialGroupIndex < 0 || _currentTutorialGroupIndex >= _tutorialSequenceSO.tutorialGroupsList.Count)
             {
                 return null;
             }
 
-            return _tutorialSequenceSO
-                .tutorialStepsList[_currentTutorialStepIndex];
+            return _tutorialSequenceSO.tutorialGroupsList[_currentTutorialGroupIndex];
+        }
+
+        private TutorialStepData GetCurrentTutorialStep()
+        {
+            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
+
+            if (currentGroup == null) return null;
+
+            if (_currentTutorialStepIndex < 0 || _currentTutorialStepIndex >= currentGroup.tutorialStepsList.Count)
+            {
+                return null;
+            }
+
+            return currentGroup.tutorialStepsList[_currentTutorialStepIndex];
         }
 
         private bool TryGetRequiredEnemyType( TutorialActionEnum action, out EnemyTypeEnum enemyType)
@@ -241,10 +305,10 @@ namespace SniperStrategyGame.Tutorial
 
         private bool IsCurrentAction(TutorialActionEnum action)
         {
-            if (_currentTutorialStepIndex >= _tutorialSequenceSO.tutorialStepsList.Count)
-                return false;
+            TutorialStepData currentStep = GetCurrentTutorialStep();
 
-            TutorialStepData currentStep = _tutorialSequenceSO.tutorialStepsList[_currentTutorialStepIndex];
+            if (currentStep == null)
+                return false;
 
             return currentStep.tutorialAction == action;
         }
