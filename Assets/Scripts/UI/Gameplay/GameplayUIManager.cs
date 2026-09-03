@@ -18,8 +18,7 @@ namespace SniperStrategyGame.UI
 
         private void Awake()
         {
-            _eventBusServiceObj =
-                GameManager.Instance.Services.Get<EventBusService>();
+            _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
         }
 
         private void OnEnable() => SubscribeToEvents();
@@ -46,28 +45,26 @@ namespace SniperStrategyGame.UI
 
         private void OnPlayerScopeIn(PlayerScopeInEvent eventObj)
         {
-            _scopeInButtonContainer.SetActive(true);
             _scopeOverlay.SetActive(true);
             ShowScopeOut();
         }
 
         private void OnPlayerScopeOut(PlayerScopeOutEvent eventObj)
         {
-            _scopeOutButtonContainer.SetActive(true);
             _scopeOverlay.SetActive(false);
             ShowScopeIn();
         }
 
         private void ShowScopeIn()
         {
-            _scopeInButton.gameObject.SetActive(true);
-            _scopeOutButton.gameObject.SetActive(false);
+            _scopeInButtonContainer.SetActive(true);
+            _scopeOutButtonContainer.SetActive(false);
         }
 
         private void ShowScopeOut()
         {
-            _scopeInButton.gameObject.SetActive(false);
-            _scopeOutButton.gameObject.SetActive(true);
+            _scopeInButtonContainer.SetActive(false);
+            _scopeOutButtonContainer.SetActive(true);
         }
 
         private void OnPlayerShot(PlayerShotEvent eventObj)
