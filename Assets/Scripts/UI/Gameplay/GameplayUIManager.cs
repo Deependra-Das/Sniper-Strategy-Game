@@ -1,7 +1,8 @@
-using SniperStrategyGame.Event;
-using SniperStrategyGame.Main;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Main;
 
 namespace SniperStrategyGame.UI
 {
@@ -13,6 +14,10 @@ namespace SniperStrategyGame.UI
         [SerializeField] private Button _scopeOutButton;
         [SerializeField] private GameObject _scopeInButtonContainer;
         [SerializeField] private GameObject _scopeOutButtonContainer;
+        [SerializeField] private GameObject _missionInfoContainer;
+        [SerializeField] private TMP_Text _missionNameText;
+        [SerializeField] private TMP_Text _missionGoalInfoText;
+
 
         private EventBusService _eventBusServiceObj;
 
@@ -29,6 +34,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<PlayerScopeInEvent>(OnPlayerScopeIn);
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShot);
+            _eventBusServiceObj.Subscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
         }
 
         private void UnsubscribeToEvents()
@@ -36,6 +42,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<PlayerScopeInEvent>(OnPlayerScopeIn);
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShot);
+            _eventBusServiceObj.Unsubscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
         }
 
         private void Start()
@@ -70,6 +77,22 @@ namespace SniperStrategyGame.UI
         private void OnPlayerShot(PlayerShotEvent eventObj)
         {
             
+        }
+
+        private void SetMissionNameText(string missionName)
+        {
+            _missionNameText.text = missionName;
+        }
+
+        private void SetMissionGoalInfoText(string missionGoalInfo)
+        {
+            _missionGoalInfoText.text = missionGoalInfo;
+        }
+
+        private void OnUpdateMissionInfo(UpdateMissionInfoEvent eventObj)
+        {
+            SetMissionNameText(eventObj.MissionName);
+            SetMissionGoalInfoText(eventObj.MissionGoal);
         }
     }
 }
