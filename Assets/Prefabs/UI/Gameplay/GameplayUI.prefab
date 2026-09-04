@@ -141,7 +141,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -263,7 +263,7 @@ GameObject:
   - component: {fileID: 5664649194683602068}
   - component: {fileID: 2136207140999538479}
   m_Layer: 5
-  m_Name: MissionBackground
+  m_Name: MissionNameBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -336,7 +336,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3588882751735114826}
   m_Layer: 5
-  m_Name: MissionInfoContent
+  m_Name: MissionGoalInfoContent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -447,7 +447,7 @@ GameObject:
   m_Component:
   - component: {fileID: 165727174269437224}
   m_Layer: 5
-  m_Name: MissionContainer
+  m_Name: MissionInfoContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -562,7 +562,7 @@ GameObject:
   - component: {fileID: 2560419674973718534}
   - component: {fileID: 8867867654996921215}
   m_Layer: 5
-  m_Name: MissionInfoText
+  m_Name: MissionGoalInfoText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -974,7 +974,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3680112849749036941}
   m_Layer: 5
-  m_Name: MissionInfoContent
+  m_Name: MissionGoalInfoContent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1500,6 +1500,9 @@ MonoBehaviour:
   _scopeOutButton: {fileID: 9188200286846580056}
   _scopeInButtonContainer: {fileID: 6672592070093170997}
   _scopeOutButtonContainer: {fileID: 7200662199239270549}
+  _missionInfoContainer: {fileID: 2136986090073588596}
+  _missionNameText: {fileID: 4336048707394343285}
+  _missionGoalInfoText: {fileID: 8867867654996921215}
 --- !u!1 &8812660986898424423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1510,7 +1513,7 @@ GameObject:
   m_Component:
   - component: {fileID: 437248271774540755}
   m_Layer: 5
-  m_Name: MissionContent
+  m_Name: MissionNameContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
