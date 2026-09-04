@@ -69,7 +69,14 @@ namespace SniperStrategyGame.Tutorial
             _currentTutorialStepIndex = 0;
             _aliveEnemies.Clear();
             _currentStepEnemies.Clear();
-            ExecuteCurrentTutorialStep();
+
+            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
+
+            if (currentGroup != null)
+            {
+                RaiseUpdateMissionInfoEvent(currentGroup);
+                ExecuteCurrentTutorialStep();
+            }
         }
 
         private void ExecuteCurrentTutorialStep()
@@ -86,7 +93,7 @@ namespace SniperStrategyGame.Tutorial
 
             if (currentStep == null)
             {
-                AdvanceToNextGroup();
+                AdvanceToNextTutorialGroup();
                 return;
             }
 
@@ -176,10 +183,10 @@ namespace SniperStrategyGame.Tutorial
                 return;
             }
 
-            AdvanceToNextGroup();
+            AdvanceToNextTutorialGroup();
         }
 
-        private void AdvanceToNextGroup()
+        private void AdvanceToNextTutorialGroup()
         {
             _currentTutorialGroupIndex++;
             _currentTutorialStepIndex = 0;
@@ -195,6 +202,8 @@ namespace SniperStrategyGame.Tutorial
             }
 
             Debug.Log($"Tutorial Group Completed. Starting: {nextGroup.tutorialGroupName}");
+
+            RaiseUpdateMissionInfoEvent(nextGroup);
 
             ExecuteCurrentTutorialStep();
         }
@@ -316,6 +325,11 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseEnemySpawnedEvent(BaseEnemy enemy)
         {
             _eventBusServiceObj.Publish(new EnemySpawnedEvent(enemy));
+        }
+
+        private void RaiseUpdateMissionInfoEvent(TutorialGroupData tutorialGroup)
+        {
+            _eventBusServiceObj.Publish(new UpdateMissionInfoEvent(tutorialGroup.tutorialGroupName, tutorialGroup.tutorialGoalInfo));
         }
     }
 }
