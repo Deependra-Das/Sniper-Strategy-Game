@@ -10,7 +10,7 @@ namespace SniperStrategyGame.Tutorial
         public string tutorialGroupName;
 
         [TextArea(2, 4)]
-        public string tutorialGoal;
+        public string tutorialGoalInfo;
 
         [Header("Tutorial Steps")]
         public List<TutorialStepData> tutorialStepsList = new();
