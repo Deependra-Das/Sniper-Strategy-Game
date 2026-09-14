@@ -54,6 +54,7 @@ namespace SniperStrategyGame.Player
         private bool _canShoot = false;
         private bool _canLook = true;
         private bool _canTeleport = false;
+        private bool _isPlayerInputEnabled = true;
         private Coroutine _scopeCoroutine;
         private float _normalFOV;
         private int playerGunLayerMask;
@@ -77,6 +78,8 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Subscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
             _eventBusServiceObj.Subscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
+            _eventBusServiceObj.Subscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
+            _eventBusServiceObj.Subscribe<ToggleCursorEvent>(OnToggleCursor);
         }
 
         protected virtual void UnsubscribeFromEvents()
@@ -84,6 +87,8 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
             _eventBusServiceObj.Unsubscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
+            _eventBusServiceObj.Unsubscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
+            _eventBusServiceObj.Unsubscribe<ToggleCursorEvent>(OnToggleCursor);
         }
 
         private void Awake()
@@ -96,9 +101,9 @@ namespace SniperStrategyGame.Player
             _bulletServiceObj = GameManager.Instance.Services.Get<BulletService>();
 
             playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-
         }
 
         private void Start()
@@ -124,17 +129,10 @@ namespace SniperStrategyGame.Player
 
         private void InitializeInput()
         {
-            _playerActionMap =
-                _inputActionObj.FindActionMap("Player");
-
-            _lookAction =
-                _playerActionMap.FindAction("Look");
-
-            _scopeAction =
-                _playerActionMap.FindAction("Scope");
-
-            _shootAction =
-                _playerActionMap.FindAction("Shoot");
+            _playerActionMap = _inputActionObj.FindActionMap("Player");
+            _lookAction = _playerActionMap.FindAction("Look");
+            _scopeAction = _playerActionMap.FindAction("Scope");
+            _shootAction = _playerActionMap.FindAction("Shoot");
         }
 
         private void EnableInput()
@@ -146,7 +144,6 @@ namespace SniperStrategyGame.Player
             _shootAction.performed += OnShootPerformed;
         }
 
-
         private void DisableInput()
         {
             _lookAction.performed -= OnLookPerformed;
@@ -154,6 +151,34 @@ namespace SniperStrategyGame.Player
             _shootAction.performed -= OnShootPerformed;
 
             _playerActionMap.Disable();
+        }
+
+        private void OnTogglePlayerInput(TogglePlayerInputEvent eventObj)
+        {
+            _isPlayerInputEnabled = eventObj.IsEnabled;
+
+            if (_isPlayerInputEnabled)
+            {
+                _playerActionMap.Enable();
+            }
+            else
+            {
+                _playerActionMap.Disable();
+            }
+        }
+
+        private void OnToggleCursor(ToggleCursorEvent eventObj)
+        {
+            if (eventObj.IsEnabled)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
 
         private void OnLookPerformed(InputAction.CallbackContext context)
@@ -173,6 +198,8 @@ namespace SniperStrategyGame.Player
 
         private void OnScopePerformed(InputAction.CallbackContext context)
         {
+            if (!_isPlayerInputEnabled) return;
+
             if (_isScoped)
                 TryScopeOut();
             else
@@ -181,6 +208,7 @@ namespace SniperStrategyGame.Player
 
         private void OnShootPerformed(InputAction.CallbackContext context)
         {
+            if (!_isPlayerInputEnabled) return;
             TryShoot();
         }
 
