@@ -26,6 +26,8 @@ namespace SniperStrategyGame.Tutorial
         private EventBusService _eventBusServiceObj;
         private EnemyService _enemyServiceObj;
 
+        private bool _isTransitioning;
+
         private void Awake()
         {
             var services = GameManager.Instance.Services;
@@ -49,7 +51,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<EnemyDiedEvent>(OnEnemyDied);
             _eventBusServiceObj.Subscribe<PlayerScopeInEvent>(OnScopeIn);
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnScopeOut);
-            _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShot);
+            _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
         }
 
@@ -58,7 +60,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
             _eventBusServiceObj.Unsubscribe<PlayerScopeInEvent>(OnScopeIn);
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnScopeOut);
-            _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShot);
+            _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Unsubscribe<ContinueTutorialEvent>(OnContinueTutorial);
         }
 
@@ -190,28 +192,13 @@ namespace SniperStrategyGame.Tutorial
             };
         }
 
-        private void OnContinueTutorial(ContinueTutorialEvent eventObj)
-        {
-            AdvanceToNextTutorialGroup();
-        }
-
-        private void AdvanceTutorial()
-        {
-            _currentTutorialStepIndex++;
-
-            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
-
-            if (currentGroup != null && _currentTutorialStepIndex < currentGroup.tutorialStepsList.Count)
-            {
-                ExecuteCurrentTutorialStep();
-                return;
-            }
-
-            CompleteCurrentTutorialGroup();
-        }
-
         private void AdvanceToNextTutorialGroup()
         {
+            if (_isTransitioning) return;
+
+            _isTransitioning = true;
+            DisablePlayerInput();
+
             _currentTutorialGroupIndex++;
             _currentTutorialStepIndex = 0;
 
@@ -221,35 +208,60 @@ namespace SniperStrategyGame.Tutorial
 
             if (nextGroup == null)
             {
+                _isTransitioning = false;
                 TutorialCompleted();
                 return;
             }
 
-            Debug.Log(
-                $"Starting Tutorial Group: {nextGroup.tutorialGroupName}"
-            );
-
-            RaiseUpdateMissionInfoEvent(nextGroup);
-
-            StartCoroutine(StartNextTutorialGroupRoutine());
+            StartCoroutine(StartNextTutorialGroupRoutine(nextGroup));
         }
 
-        private IEnumerator StartNextTutorialGroupRoutine()
+        private IEnumerator StartNextTutorialGroupRoutine(TutorialGroupData nextGroup)
         {
             yield return new WaitForSeconds(_stepTransitionDelay);
 
+            Debug.Log($"Starting Tutorial Group: {nextGroup.tutorialGroupName}");
+            RaiseUpdateMissionInfoEvent(nextGroup);
             ExecuteCurrentTutorialStep();
+            _isTransitioning = false;
             EnablePlayerInput();
+        }
+
+        private void AdvanceToNextTutorialStep()
+        {
+            if (_isTransitioning) return;
+
+            _isTransitioning = true;
+            DisablePlayerInput();
+
+            TutorialStepData completedStep = GetCurrentTutorialStep();
+
+            if (completedStep != null)
+            {
+                RaiseTutorialStepCompletedEvent(completedStep);
+            }
+
+            StartCoroutine(StartNextTutorialStepRoutine());
         }
 
         private IEnumerator StartNextTutorialStepRoutine()
         {
-            DisablePlayerInput();
-
             yield return new WaitForSeconds(_stepTransitionDelay);
 
-            ExecuteCurrentTutorialStep();
-            EnablePlayerInput();
+            _currentTutorialStepIndex++;
+            TutorialGroupData currentGroup = GetCurrentTutorialGroup();
+
+            if (currentGroup != null && _currentTutorialStepIndex < currentGroup.tutorialStepsList.Count)
+            {
+                ExecuteCurrentTutorialStep();
+                _isTransitioning = false;
+                EnablePlayerInput();
+
+                yield break;
+            }
+
+            _isTransitioning = false;
+            CompleteCurrentTutorialGroup();
         }
 
         private void CompleteCurrentTutorialGroup()
@@ -272,11 +284,10 @@ namespace SniperStrategyGame.Tutorial
                 return;
             }
 
-            Debug.Log(
-                $"Tutorial Group Completed: {completedGroup.tutorialGroupName}"
-            );
-
-            _eventBusServiceObj.Publish(new TutorialGroupCompletedEvent(completedGroup.tutorialGroupName, nextGroup.tutorialGroupName));
+            Debug.Log($"Tutorial Group Completed: {completedGroup.tutorialGroupName}");
+            EnableCursor();
+            RaiseTutorialGroupCompletedEvent(completedGroup.tutorialGroupName, nextGroup.tutorialGroupName);
+       
         }
 
         private void TutorialCompleted()
@@ -298,25 +309,31 @@ namespace SniperStrategyGame.Tutorial
             return _tutorialSequenceSO.tutorialGroupsList[index];
         }
 
+        private void OnContinueTutorial(ContinueTutorialEvent eventObj)
+        {
+            DisableCursor();
+            AdvanceToNextTutorialGroup();
+        }
+
         private void OnScopeIn(PlayerScopeInEvent eventObj)
         {
             if (!IsCurrentAction(TutorialActionEnum.ScopeIn)) return;
 
-            AdvanceTutorial();
+            AdvanceToNextTutorialStep();
         }
 
         private void OnScopeOut(PlayerScopeOutEvent eventObj)
         {
             if (!IsCurrentAction(TutorialActionEnum.ScopeOut)) return;
 
-            AdvanceTutorial();
+            AdvanceToNextTutorialStep();
         }
 
-        private void OnPlayerShot(PlayerShotEvent eventObj)
+        private void OnPlayerBulletMissedEnemy(PlayerBulletMissedEnemyEvent eventObj)
         {
             if (!IsCurrentAction(TutorialActionEnum.Shoot)) return;
 
-            AdvanceTutorial();
+            AdvanceToNextTutorialStep();
         }
 
         private void OnEnemyDied(EnemyDiedEvent eventObj)
@@ -342,7 +359,7 @@ namespace SniperStrategyGame.Tutorial
 
             if (_currentStepEnemies.Count > 0) return;
 
-            AdvanceTutorial();
+            AdvanceToNextTutorialStep();
         }
 
         private TutorialGroupData GetCurrentTutorialGroup()
@@ -409,14 +426,43 @@ namespace SniperStrategyGame.Tutorial
 
         private void EnablePlayerInput()
         {
-            _eventBusServiceObj.Publish(new TogglePlayerInputEvent(true));
+            RaiseTogglePlayerInputEventEvent(true);
         }
 
         private void DisablePlayerInput()
         {
-            _eventBusServiceObj.Publish(new TogglePlayerInputEvent(false));
+            RaiseTogglePlayerInputEventEvent(false);
         }
 
+        private void EnableCursor()
+        {
+            RaiseToggleCursorEventEvent(true);
+        }
+
+        private void DisableCursor()
+        {
+            RaiseToggleCursorEventEvent(false);
+        }
+
+        private void RaiseTogglePlayerInputEventEvent(bool value)
+        {
+            _eventBusServiceObj.Publish(new TogglePlayerInputEvent(value));
+        }
+
+        private void RaiseToggleCursorEventEvent(bool value)
+        {
+            _eventBusServiceObj.Publish(new ToggleCursorEvent(value));
+        }
+
+        private void RaiseTutorialStepCompletedEvent(TutorialStepData tutorialStep)
+        {
+            _eventBusServiceObj.Publish(new TutorialStepCompletedEvent(tutorialStep.tutorialAction));
+        }
+
+        private void RaiseTutorialGroupCompletedEvent(string completedTutorialGroupName,string nextTutorialGroupName)
+        {
+            _eventBusServiceObj.Publish(new TutorialGroupCompletedEvent(completedTutorialGroupName, nextTutorialGroupName));
+        }
 
         private void RaiseEnemySpawnedEvent(BaseEnemy enemy)
         {
