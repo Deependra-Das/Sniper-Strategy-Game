@@ -12,44 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6d48d159b0712b4db6826112d53ec15, type: 3}
   m_Name: Tutorial_SO
   m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Tutorial.Tutorial_SO
-  tutorialStepsList:
-  - tutorialAction: 1
-    requiredEnemyTypeList: 
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 2
-    requiredEnemyTypeList: 
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 3
-    requiredEnemyTypeList: 
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 4
-    requiredEnemyTypeList: 00000000
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 5
-    requiredEnemyTypeList: 01000000
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 6
-    requiredEnemyTypeList: 02000000
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 7
-    requiredEnemyTypeList: 0200000001000000
-    title: 
-    description: 
-    instruction: 
-  - tutorialAction: 8
-    requiredEnemyTypeList: 01000000
-    title: 
-    description: 
-    instruction: 
+  tutorialGroupsList:
+  - tutorialGroupName: Gun Fundamentals
+    tutorialGoalInfo: Learn the basics of aiming, scoping, and shooting
+    tutorialStepsList:
+    - tutorialAction: 1
+      requiredEnemyTypeList: 
+      instruction: Press to scope in to aim down your sights
+      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      showOverlay: 1
+    - tutorialAction: 2
+      requiredEnemyTypeList: 
+      instruction: Press to scope out to return to your normal view
+      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      showOverlay: 1
+    - tutorialAction: 3
+      requiredEnemyTypeList: 
+      instruction: Press to fire your gun
+      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      showOverlay: 1
+  - tutorialGroupName: Enemy Types
+    tutorialGoalInfo: Learn to identify & eliminate different types of enemies
+    tutorialStepsList:
+    - tutorialAction: 4
+      requiredEnemyTypeList: 00000000
+      instruction: Aim at the Guard enemy and eliminate it.
+      instructionButtonMapSprite: {fileID: 0}
+      showOverlay: 0
