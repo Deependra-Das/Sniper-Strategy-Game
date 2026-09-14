@@ -19,5 +19,7 @@ namespace SniperStrategyGame.Tutorial
         [Header("Input")]
         [Tooltip("Optional button/key map icon displayed with the instruction.")]
         public Sprite instructionButtonMapSprite;
+
+        public bool showOverlay = false;
     }
 }
