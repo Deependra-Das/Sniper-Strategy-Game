@@ -20,16 +20,19 @@ MonoBehaviour:
       requiredEnemyTypeList: 
       instruction: Press to scope in to aim down your sights
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      instructionContainerSize: 384
       showOverlay: 1
     - tutorialAction: 2
       requiredEnemyTypeList: 
       instruction: Press to scope out to return to your normal view
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      instructionContainerSize: 430
       showOverlay: 1
     - tutorialAction: 3
       requiredEnemyTypeList: 
-      instruction: Press to fire your gun
+      instruction: Press to fire your gun after Scoped In
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+      instructionContainerSize: 354
       showOverlay: 1
   - tutorialGroupName: Enemy Types
     tutorialGoalInfo: Learn to identify & eliminate different types of enemies
@@ -38,4 +41,5 @@ MonoBehaviour:
       requiredEnemyTypeList: 00000000
       instruction: Aim at the Guard enemy and eliminate it.
       instructionButtonMapSprite: {fileID: 0}
+      instructionContainerSize: 332
       showOverlay: 0

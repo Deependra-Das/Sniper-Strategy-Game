@@ -1,21 +1,15 @@
-using SniperStrategyGame.Tutorial;
 using UnityEngine;
+using SniperStrategyGame.Tutorial;
 
 namespace SniperStrategyGame.Event
 {
     public class TutorialStepStartedEvent
     {
-        public readonly TutorialActionEnum TutorialActionRequired;
-        public readonly string Instruction;
-        public readonly Sprite InstructionButtonMapSprite;
-        public readonly bool ShowOverlay;
+        public readonly TutorialStepData TutorialStepData;
 
-        public TutorialStepStartedEvent(TutorialActionEnum tutorialActionRequired, string instruction, Sprite instructionButtonMapSprite, bool showOverlay)
+        public TutorialStepStartedEvent(TutorialStepData tutorialStepData)
         {
-            TutorialActionRequired = tutorialActionRequired;
-            Instruction = instruction;
-            InstructionButtonMapSprite = instructionButtonMapSprite;
-            ShowOverlay = showOverlay;
+            TutorialStepData = tutorialStepData;
         }
     }
 }

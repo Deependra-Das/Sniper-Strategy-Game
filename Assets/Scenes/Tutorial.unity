@@ -1859,7 +1859,7 @@ GameObject:
   - component: {fileID: 674016955}
   - component: {fileID: 674016954}
   m_Layer: 5
-  m_Name: InstructionButtonIcon
+  m_Name: InstructionButtonMapIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5225,6 +5225,8 @@ MonoBehaviour:
   _scopeOutButtonContainer: {fileID: 1760649046}
   _shootButtonContainer: {fileID: 1760649048}
   _tutorialInstructionContainer: {fileID: 829217999}
+  _tutorialInstructionButtonMapImage: {fileID: 674016954}
+  _tutorialInstructionSeparator: {fileID: 470147831}
   _tutorialInstructionText: {fileID: 1089188128}
   _tutorialNotificationContainer: {fileID: 1824621402}
   _tutorialNotificationText: {fileID: 553871215}

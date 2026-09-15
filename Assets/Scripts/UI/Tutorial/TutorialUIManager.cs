@@ -19,6 +19,8 @@ namespace SniperStrategyGame.UI
         [SerializeField] private RectTransform _shootButtonContainer;
 
         [SerializeField] private GameObject _tutorialInstructionContainer;
+        [SerializeField] private Image _tutorialInstructionButtonMapImage;
+        [SerializeField] private GameObject _tutorialInstructionSeparator;
         [SerializeField] private TMP_Text _tutorialInstructionText;
         [SerializeField] private GameObject _tutorialNotificationContainer;
         [SerializeField] private TMP_Text _tutorialNotificationText;
@@ -26,7 +28,8 @@ namespace SniperStrategyGame.UI
         [SerializeField] private TMP_Text _continueTutorialButtonText;
 
         private EventBusService _eventBusServiceObj;
-
+        private RectTransform _tutorialInstructionContainerRectTransform;
+        private RectTransform _tutorialInstructionTextRectTransform;
         private Material _overlayMaterial;
 
         private static readonly int HoleCenterID = Shader.PropertyToID("_HoleCenter");
@@ -37,6 +40,8 @@ namespace SniperStrategyGame.UI
             var services = GameManager.Instance.Services;
 
             _eventBusServiceObj = services.Get<EventBusService>();
+            _tutorialInstructionContainerRectTransform = _tutorialInstructionContainer.GetComponent<RectTransform>();
+            _tutorialInstructionTextRectTransform = _tutorialInstructionText.GetComponent<RectTransform>();
         }
 
         private void Start()
@@ -96,14 +101,33 @@ namespace SniperStrategyGame.UI
 
         private void OnTutorialStepStarted(TutorialStepStartedEvent eventObj)
         {
-            _tutorialInstructionText.text = eventObj.Instruction;
+            TutorialStepData tutorialStepData = eventObj.TutorialStepData;
+            SetupTutorialInstructionContent(tutorialStepData);
             ToggleTutorialInstructionContainer(true);
             ToggleTutorialOverlay(false);
 
-            if (eventObj.ShowOverlay)
+            if (tutorialStepData.showOverlay)
             {
-                SetUpTutorialOverlay(eventObj.TutorialActionRequired);
+                SetUpTutorialOverlay(tutorialStepData.tutorialAction);
                 ToggleTutorialOverlay(true);
+            }
+        }
+
+        private void SetupTutorialInstructionContent(TutorialStepData tutorialStepData)
+        {
+            _tutorialInstructionContainerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, tutorialStepData.instructionContainerSize);
+            _tutorialInstructionText.text = tutorialStepData.instruction;
+
+            _tutorialInstructionTextRectTransform.offsetMin = new Vector2(20f, _tutorialInstructionTextRectTransform.offsetMin.y);
+            _tutorialInstructionButtonMapImage.gameObject.SetActive(false);
+            _tutorialInstructionSeparator.SetActive(false);
+
+            if (tutorialStepData.instructionButtonMapSprite!=null)
+            {
+                _tutorialInstructionTextRectTransform.offsetMin = new Vector2(68f, _tutorialInstructionTextRectTransform.offsetMin.y);
+                _tutorialInstructionButtonMapImage.sprite = tutorialStepData.instructionButtonMapSprite;
+                _tutorialInstructionButtonMapImage.gameObject.SetActive(true);
+                _tutorialInstructionSeparator.SetActive(true);
             }
         }
         

@@ -476,7 +476,7 @@ namespace SniperStrategyGame.Tutorial
 
         private void RaiseTutorialStepStartedEvent(TutorialStepData tutorialStep)
         {
-            _eventBusServiceObj.Publish(new TutorialStepStartedEvent(tutorialStep.tutorialAction, tutorialStep.instruction, tutorialStep.instructionButtonMapSprite, tutorialStep.showOverlay));
+            _eventBusServiceObj.Publish(new TutorialStepStartedEvent(tutorialStep));
         }
     }
 }
