@@ -44,6 +44,7 @@ namespace SniperStrategyGame.UI
             _overlayMaterial = new Material(_tutorialOverlayMaterial);
             _tutorialOverlayImage.material = _overlayMaterial;
             ToggleTutorialOverlay(false);
+            ToggleTutorialInstructionContainer(false);
             ToggleTutorialNotificationContainer(false);
             SubscribeToEvents();
         }
@@ -52,6 +53,7 @@ namespace SniperStrategyGame.UI
         {
             _continueTutorialButton.onClick.AddListener(OnContinueTutorialClicked);
             _eventBusServiceObj.Subscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
+            _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
         }
 
@@ -59,6 +61,7 @@ namespace SniperStrategyGame.UI
         {
             _continueTutorialButton.onClick.RemoveListener(OnContinueTutorialClicked);
             _eventBusServiceObj.Unsubscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
+            _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
 
         }
@@ -86,9 +89,15 @@ namespace SniperStrategyGame.UI
             _tutorialOverlayImage.gameObject.SetActive(value);
         }
 
+        private void ToggleTutorialInstructionContainer(bool value)
+        {
+            _tutorialInstructionContainer.gameObject.SetActive(value);
+        }
+
         private void OnTutorialStepStarted(TutorialStepStartedEvent eventObj)
         {
             _tutorialInstructionText.text = eventObj.Instruction;
+            ToggleTutorialInstructionContainer(true);
             ToggleTutorialOverlay(false);
 
             if (eventObj.ShowOverlay)
@@ -97,7 +106,7 @@ namespace SniperStrategyGame.UI
                 ToggleTutorialOverlay(true);
             }
         }
-
+        
         public void SetUpTutorialOverlay(TutorialActionEnum action)
         {
             RectTransform buttonContainer = GetTutorialButton(action);
@@ -141,6 +150,12 @@ namespace SniperStrategyGame.UI
 
             _overlayMaterial.SetVector(HoleCenterID, center);
             _overlayMaterial.SetVector(HoleSizeID, size);
+        }
+
+        private void OnTutorialStepCompleted(TutorialStepCompletedEvent eventObj)
+        {
+            ToggleTutorialOverlay(false);
+            ToggleTutorialInstructionContainer(false);
         }
 
         private void OnDestroy()
