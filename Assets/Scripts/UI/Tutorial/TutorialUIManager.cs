@@ -64,6 +64,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
+            _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
         }
 
         private void UnsubscribeToEvents()
@@ -73,6 +74,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
+            _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
         }
 
         private void OnContinueTutorialButtonClicked()
@@ -221,6 +223,12 @@ namespace SniperStrategyGame.UI
             ToggleTutorialOverlay(false);
             ToggleTutorialInstructionContainer(false);
         }
+
+        private void OnPlayerShotTutorialUI(PlayerShotEvent eventObj)
+        {
+            ToggleTutorialOverlay(false);
+        }
+
 
         private void OnDestroy()
         {
