@@ -1,9 +1,10 @@
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Main;
+using SniperStrategyGame.SceneLoader;
+using SniperStrategyGame.Tutorial;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using SniperStrategyGame.Event;
-using SniperStrategyGame.Main;
-using SniperStrategyGame.Tutorial;
 
 namespace SniperStrategyGame.UI
 {
@@ -26,6 +27,7 @@ namespace SniperStrategyGame.UI
         [SerializeField] private TMP_Text _tutorialNotificationText;
         [SerializeField] private Button _continueTutorialButton;
         [SerializeField] private TMP_Text _continueTutorialButtonText;
+        [SerializeField] private Button _backtToStageSelectionButton;
 
         private EventBusService _eventBusServiceObj;
         private RectTransform _tutorialInstructionContainerRectTransform;
@@ -56,37 +58,75 @@ namespace SniperStrategyGame.UI
 
         private void SubscribeToEvents()
         {
-            _continueTutorialButton.onClick.AddListener(OnContinueTutorialClicked);
+            _continueTutorialButton.onClick.AddListener(OnContinueTutorialButtonClicked);
+            _backtToStageSelectionButton.onClick.AddListener(OnBackToStageSelectionButtonClicked);
             _eventBusServiceObj.Subscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
+            _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
         }
 
         private void UnsubscribeToEvents()
         {
-            _continueTutorialButton.onClick.RemoveListener(OnContinueTutorialClicked);
+            _continueTutorialButton.onClick.RemoveListener(OnContinueTutorialButtonClicked);
             _eventBusServiceObj.Unsubscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
-
+            _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
         }
 
-        private void OnContinueTutorialClicked()
+        private void OnContinueTutorialButtonClicked()
         {
             _tutorialNotificationContainer.SetActive(false);
             _eventBusServiceObj.Publish(new ContinueTutorialEvent());
         }
 
+        private void OnBackToStageSelectionButtonClicked()
+        {
+            _tutorialNotificationContainer.SetActive(false);
+            GameManager.Instance.Services.Get<SceneLoaderService>().LoadScene(SceneNameEnum.StageSelection);
+        }
+
         private void OnTutorialGroupCompleted(TutorialGroupCompletedEvent eventObj)
         {
-            _tutorialNotificationText.text = $"{eventObj.CompletedGroupName} Tutorial completed!";
-            _continueTutorialButtonText.text = $"Continue to {eventObj.NextGroupName} tutorial.";
+            SetupTutorialNotificationText($"{eventObj.CompletedGroupName} Tutorial completed!");
+            SetupContinueTutorialButtonText($"Continue to {eventObj.NextGroupName} tutorial.");
+            ToggleContinueTutorialButton(true);
+            ToggleBacktToStageSelectionButton(false);
             ToggleTutorialNotificationContainer(true);
+        }
+
+        private void OnAllTutorialsCompleted(AllTutorialsCompletedEvent eventObj)
+        {
+            SetupTutorialNotificationText("All Tutorials completed!");
+            ToggleContinueTutorialButton(false);
+            ToggleBacktToStageSelectionButton(true);
+            ToggleTutorialNotificationContainer(true);
+        }        
+
+        private void SetupTutorialNotificationText(string value)
+        {
+            _tutorialNotificationText.text = value;
+        }
+
+        private void SetupContinueTutorialButtonText(string value)
+        {
+            _continueTutorialButtonText.text = value;
         }
 
         private void ToggleTutorialNotificationContainer(bool value)
         {
             _tutorialNotificationContainer.SetActive(value);
+        }
+
+        private void ToggleContinueTutorialButton(bool value)
+        {
+            _continueTutorialButton.gameObject.SetActive(value);
+        }
+
+        private void ToggleBacktToStageSelectionButton(bool value)
+        {
+            _backtToStageSelectionButton.gameObject.SetActive(value);
         }
 
         private void ToggleTutorialOverlay(bool value)

@@ -266,6 +266,9 @@ namespace SniperStrategyGame.Tutorial
 
         private void CompleteCurrentTutorialGroup()
         {
+            DisablePlayerInput();
+            EnableCursor();
+
             TutorialGroupData completedGroup = GetCurrentTutorialGroup();
 
             if (completedGroup == null)
@@ -276,8 +279,6 @@ namespace SniperStrategyGame.Tutorial
 
             TutorialGroupData nextGroup = GetTutorialGroup(_currentTutorialGroupIndex + 1);
 
-            DisablePlayerInput();
-
             if (nextGroup == null)
             {
                 TutorialCompleted();
@@ -285,14 +286,13 @@ namespace SniperStrategyGame.Tutorial
             }
 
             Debug.Log($"Tutorial Group Completed: {completedGroup.tutorialGroupName}");
-            EnableCursor();
-            RaiseTutorialGroupCompletedEvent(completedGroup.tutorialGroupName, nextGroup.tutorialGroupName);
-       
+            RaiseTutorialGroupCompletedEvent(completedGroup.tutorialGroupName, nextGroup.tutorialGroupName);       
         }
 
         private void TutorialCompleted()
         {
             Debug.Log("Tutorial Completed");
+            RaiseAllTutorialsCompletedEvent();
         }
 
         private TutorialGroupData GetTutorialGroup(int index)
@@ -462,6 +462,11 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseTutorialGroupCompletedEvent(string completedTutorialGroupName,string nextTutorialGroupName)
         {
             _eventBusServiceObj.Publish(new TutorialGroupCompletedEvent(completedTutorialGroupName, nextTutorialGroupName));
+        }
+
+        private void RaiseAllTutorialsCompletedEvent()
+        {
+            _eventBusServiceObj.Publish(new AllTutorialsCompletedEvent());
         }
 
         private void RaiseEnemySpawnedEvent(BaseEnemy enemy)
