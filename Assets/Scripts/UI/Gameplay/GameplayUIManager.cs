@@ -1,9 +1,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
-using System.Collections;
 
 namespace SniperStrategyGame.UI
 {
@@ -45,6 +45,8 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShot);
             _eventBusServiceObj.Subscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
+            _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
+            _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
         }
 
         private void UnsubscribeToEvents()
@@ -53,6 +55,8 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShot);
             _eventBusServiceObj.Unsubscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
+            _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
+            _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
         }
 
         private void Start()
@@ -108,6 +112,16 @@ namespace SniperStrategyGame.UI
             StartCoroutine(ShowMissionInfo());
         }
 
+        private void OnTutorialGroupCompletedGameplayUI(TutorialGroupCompletedEvent eventObj)
+        {
+            StartCoroutine(HideMissionInfo());
+        }
+
+        private void OnAllTutorialsCompletedGameplayUI(AllTutorialsCompletedEvent eventObj)
+        {
+            StartCoroutine(HideMissionInfo());
+        }
+
         private IEnumerator ShowMissionInfo()
         {
             StartCoroutine(AnimateSlideFadeUI(_missionNameContainer, _missionNameContainerCanvasGroup,
@@ -119,8 +133,13 @@ namespace SniperStrategyGame.UI
                 _missionGoalContainerStartPosition, _missionGoalContainerEndPosition, FadeTypeEnum.FadeIn, _slideAnimationDuration));
         }
 
-        private void HideMissionInfo()
+        private IEnumerator HideMissionInfo()
         {
+            StartCoroutine(AnimateSlideFadeUI(_missionGoalContainer, _missionGoalContainerCanvasGroup,
+                _missionGoalContainerEndPosition, _missionGoalContainerStartPosition, FadeTypeEnum.FadeOut, _slideAnimationDuration));
+
+            yield return new WaitForSeconds(_slideAnimationDuration);
+
             StartCoroutine(AnimateSlideFadeUI(_missionNameContainer, _missionNameContainerCanvasGroup,
                 _missionNameContainerEndPosition, _missionNameContainerStartPosition, FadeTypeEnum.FadeOut, _slideAnimationDuration));
         }
