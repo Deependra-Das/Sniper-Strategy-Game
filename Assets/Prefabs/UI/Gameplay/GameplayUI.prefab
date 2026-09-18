@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 2753499792820148346}
   - component: {fileID: 7667573326098635492}
   m_Layer: 5
-  m_Name: MissionGoalIcon
+  m_Name: MissionIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -336,7 +336,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3588882751735114826}
   m_Layer: 5
-  m_Name: MissionGoalInfoContent
+  m_Name: MissionGoalContent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -562,7 +562,7 @@ GameObject:
   - component: {fileID: 2560419674973718534}
   - component: {fileID: 8867867654996921215}
   m_Layer: 5
-  m_Name: MissionGoalInfoText
+  m_Name: MissionGoalText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -973,8 +973,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3680112849749036941}
+  - component: {fileID: 5681891834252785615}
   m_Layer: 5
-  m_Name: MissionGoalInfoContent
+  m_Name: MissionGoalInfoContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1000,6 +1001,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 240, y: 32}
   m_Pivot: {x: 0.5, y: 0}
+--- !u!225 &5681891834252785615
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5096651170102742292}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &5649654499701680786
 GameObject:
   m_ObjectHideFlags: 0
@@ -1503,6 +1516,15 @@ MonoBehaviour:
   _missionInfoContainer: {fileID: 2136986090073588596}
   _missionNameText: {fileID: 4336048707394343285}
   _missionGoalInfoText: {fileID: 8867867654996921215}
+  _missionNameContainer: {fileID: 8812660986898424423}
+  _missionNameContainerCanvasGroup: {fileID: 2926592194426609411}
+  _missionNameContainerStartPosition: {x: -240, y: 0}
+  _missionNameContainerEndPosition: {x: 0, y: 0}
+  _missionGoalContainer: {fileID: 5096651170102742292}
+  _missionGoalContainerCanvasGroup: {fileID: 5681891834252785615}
+  _missionGoalContainerStartPosition: {x: 0, y: 32}
+  _missionGoalContainerEndPosition: {x: 0, y: 0}
+  _slideAnimationDuration: 0.5
 --- !u!1 &8812660986898424423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1512,6 +1534,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 437248271774540755}
+  - component: {fileID: 2926592194426609411}
   m_Layer: 5
   m_Name: MissionNameContainer
   m_TagString: Untagged
@@ -1540,6 +1563,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 240, y: 32}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!225 &2926592194426609411
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8812660986898424423}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8947473204284714462
 GameObject:
   m_ObjectHideFlags: 0
