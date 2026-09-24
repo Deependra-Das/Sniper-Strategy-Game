@@ -95,7 +95,6 @@ namespace SniperStrategyGame.Tutorial
             yield return new WaitForSeconds(_stepTransitionDelay);
 
             ExecuteCurrentTutorialStep();
-
             EnablePlayerInput();
         }
 
@@ -129,6 +128,9 @@ namespace SniperStrategyGame.Tutorial
                     SpawnEnemyGroup(enemyType);
                 }
             }
+
+            RaiseActivateEnemiesEvent();
+            RaiseTogglePlyerShootAbilityEvent(currentStep.allowShooting);
         }
 
         private void SpawnEnemyGroup(EnemyTypeEnum enemyType)
@@ -482,6 +484,16 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseTutorialStepStartedEvent(TutorialStepData tutorialStep)
         {
             _eventBusServiceObj.Publish(new TutorialStepStartedEvent(tutorialStep));
+        }
+
+        private void RaiseActivateEnemiesEvent()
+        {
+            _eventBusServiceObj.Publish(new ActivateEnemiesEvent());
+        }
+
+        private void RaiseTogglePlyerShootAbilityEvent(bool canShoot)
+        {
+            _eventBusServiceObj.Publish(new TogglePlyerShootAbilityEvent(canShoot));
         }
     }
 }

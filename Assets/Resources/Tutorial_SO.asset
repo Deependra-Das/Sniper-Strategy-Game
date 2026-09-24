@@ -23,6 +23,7 @@ MonoBehaviour:
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
       instructionContainerSize: 384
       showOverlay: 1
+      allowShooting: 0
     - tutorialAction: 2
       tutorialActionText: SCOPE OUT
       requiredEnemyTypeList: 
@@ -30,6 +31,7 @@ MonoBehaviour:
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
       instructionContainerSize: 430
       showOverlay: 1
+      allowShooting: 0
     - tutorialAction: 3
       tutorialActionText: SHOOT
       requiredEnemyTypeList: 
@@ -37,6 +39,7 @@ MonoBehaviour:
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
       instructionContainerSize: 354
       showOverlay: 1
+      allowShooting: 1
   - tutorialGroupName: Enemy Types
     tutorialGoalInfo: Learn to identify & eliminate different types of enemies
     tutorialStepsList:
@@ -47,6 +50,7 @@ MonoBehaviour:
       instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
       showOverlay: 0
+      allowShooting: 1
     - tutorialAction: 5
       tutorialActionText: PATROL ENEMY
       requiredEnemyTypeList: 01000000
@@ -54,3 +58,4 @@ MonoBehaviour:
       instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
       showOverlay: 0
+      allowShooting: 1

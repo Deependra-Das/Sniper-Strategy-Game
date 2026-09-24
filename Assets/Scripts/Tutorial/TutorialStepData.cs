@@ -23,5 +23,6 @@ namespace SniperStrategyGame.Tutorial
 
         public int instructionContainerSize;
         public bool showOverlay = false;
+        public bool allowShooting = false;
     }
 }

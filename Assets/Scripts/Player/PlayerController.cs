@@ -80,6 +80,7 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Subscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
             _eventBusServiceObj.Subscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
             _eventBusServiceObj.Subscribe<ToggleCursorEvent>(OnToggleCursor);
+            _eventBusServiceObj.Subscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
         }
 
         protected virtual void UnsubscribeFromEvents()
@@ -89,6 +90,7 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Unsubscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
             _eventBusServiceObj.Unsubscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
             _eventBusServiceObj.Unsubscribe<ToggleCursorEvent>(OnToggleCursor);
+            _eventBusServiceObj.Unsubscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
         }
 
         private void Awake()
@@ -422,6 +424,11 @@ namespace SniperStrategyGame.Player
 
             groundPosition = default;
             return false;
+        }
+
+        private void OnTogglePlayerShootAbilityEvent(TogglePlyerShootAbilityEvent eventObj)
+        {
+            _canShoot = eventObj.IsEnabled;
         }
     }
 }
