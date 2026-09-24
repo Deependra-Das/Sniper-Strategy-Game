@@ -9,6 +9,7 @@ namespace SniperStrategyGame.Tutorial
     {
         [Header("Expected Action")]
         public TutorialActionEnum tutorialAction;
+        public string tutorialActionText;
 
         [Header("Enemies Required For This Step")]
         public List<EnemyTypeEnum> requiredEnemyTypeList;
