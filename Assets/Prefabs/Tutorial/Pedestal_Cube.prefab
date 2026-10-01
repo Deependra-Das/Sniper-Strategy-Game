@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 23818829674412902}
   - component: {fileID: 65221493401946458}
   m_Layer: 0
-  m_Name: Centre Cube
+  m_Name: Pedestal_Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
