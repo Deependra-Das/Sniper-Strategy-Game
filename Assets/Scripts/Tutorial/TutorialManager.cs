@@ -15,7 +15,6 @@ namespace SniperStrategyGame.Tutorial
         [SerializeField] private List<Transform> _enemySpawnPointList;
         [SerializeField] private List<PatrolPath> _patrolPathList;
 
-        private readonly List<BaseEnemy> _aliveEnemies = new();
         private readonly List<BaseEnemy> _currentStepEnemies = new();
 
         private int _currentTutorialGroupIndex;
@@ -71,7 +70,6 @@ namespace SniperStrategyGame.Tutorial
         {
             _currentTutorialGroupIndex = 0;
             _currentTutorialStepIndex = 0;
-            _aliveEnemies.Clear();
             _currentStepEnemies.Clear();
 
             TutorialGroupData currentGroup = GetCurrentTutorialGroup();
@@ -160,7 +158,6 @@ namespace SniperStrategyGame.Tutorial
                 patrolEnemy.SetPatrolPath(GetPatrolPath(0));
             }
 
-            _aliveEnemies.Add(enemy);
             _currentStepEnemies.Add(enemy);
 
             RaiseEnemySpawnedEvent(enemy);            
@@ -328,28 +325,23 @@ namespace SniperStrategyGame.Tutorial
 
         private void OnEnemyDied(EnemyDiedEvent eventObj)
         {
-            if (eventObj.Enemy == null) return;
+            if (!IsValidEnemyDeath(eventObj))
+                return;
 
-            if (!_aliveEnemies.Remove(eventObj.Enemy)) return;
-
-            _currentStepEnemies.Remove(eventObj.Enemy);
-
-            Destroy(eventObj.Enemy.gameObject);
+            RemoveDeadEnemy(eventObj.Enemy);
 
             TutorialStepData currentStep = GetCurrentTutorialStep();
 
-            if (currentStep == null) return;
+            if (currentStep == null)
+                return;
 
-            if (!TryGetRequiredEnemyType(currentStep.tutorialAction, out EnemyTypeEnum requiredEnemyType))
+            if (currentStep.tutorialAction == TutorialActionEnum.TeleportAbility)
             {
+                HandleTeleportStepEnemyDeath();
                 return;
             }
 
-            if (eventObj.Enemy.EnemyType != requiredEnemyType) return;
-
-            if (_currentStepEnemies.Count > 0) return;
-
-            AdvanceToNextTutorialStep();
+            HandleRequiredEnemyStepDeath(currentStep, eventObj.Enemy);
         }
 
         private TutorialGroupData GetCurrentTutorialGroup()
@@ -412,6 +404,47 @@ namespace SniperStrategyGame.Tutorial
                 return false;
 
             return currentStep.tutorialAction == action;
+        }
+
+        private bool IsValidEnemyDeath(EnemyDiedEvent eventObj)
+        {
+            if (eventObj.Enemy == null)
+                return false;
+
+            if (!_currentStepEnemies.Contains(eventObj.Enemy))
+                return false;
+
+            return true;
+        }
+
+        private void RemoveDeadEnemy(BaseEnemy enemy)
+        {
+            _currentStepEnemies.Remove(enemy);
+
+            Destroy(enemy.gameObject);
+        }
+
+        private void HandleTeleportStepEnemyDeath()
+        {
+            if (_currentStepEnemies.Count == 0)
+            {
+                AdvanceToNextTutorialStep();
+            }
+        }
+
+        private void HandleRequiredEnemyStepDeath(TutorialStepData currentStep, BaseEnemy deadEnemy)
+        {
+            if (!TryGetRequiredEnemyType(currentStep.tutorialAction, out EnemyTypeEnum requiredEnemyType))            
+            {
+                return;
+            }
+
+            if (deadEnemy.EnemyType != requiredEnemyType) return;
+
+            if (_currentStepEnemies.Count == 0)
+            {
+                AdvanceToNextTutorialStep();
+            }
         }
 
         private void EnablePlayerInput()
