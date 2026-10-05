@@ -110,6 +110,9 @@ namespace SniperStrategyGame.Player
 
         private void Start()
         {
+            _yaw = transform.eulerAngles.y;
+            _pitch = _cameraPivot.localEulerAngles.x;
+
             SetPlayerCameraTarget();
             SetBulletCameraTarget();
             _normalFOV = _playerCamera.Lens.FieldOfView;
