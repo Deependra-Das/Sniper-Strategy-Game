@@ -18,7 +18,7 @@ MonoBehaviour:
     tutorialStepsList:
     - tutorialAction: 1
       tutorialActionText: SCOPE IN
-      requiredEnemyTypeList: 
+      requiredEnemySpawnDataList: []
       instruction: Press to scope in to aim down your sights
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
       instructionContainerSize: 384
@@ -26,7 +26,7 @@ MonoBehaviour:
       allowShooting: 0
     - tutorialAction: 2
       tutorialActionText: SCOPE OUT
-      requiredEnemyTypeList: 
+      requiredEnemySpawnDataList: []
       instruction: Press to scope out to return to your normal view
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
       instructionContainerSize: 430
@@ -34,10 +34,10 @@ MonoBehaviour:
       allowShooting: 0
     - tutorialAction: 3
       tutorialActionText: SHOOT
-      requiredEnemyTypeList: 
-      instruction: Press to fire your gun after Scoped In
+      requiredEnemySpawnDataList: []
+      instruction: Press to fire your gun at the Target after Scoped In
       instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      instructionContainerSize: 354
+      instructionContainerSize: 450
       showOverlay: 1
       allowShooting: 1
   - tutorialGroupName: Enemy Types
@@ -45,7 +45,9 @@ MonoBehaviour:
     tutorialStepsList:
     - tutorialAction: 4
       tutorialActionText: GUARD ENEMY
-      requiredEnemyTypeList: 00000000
+      requiredEnemySpawnDataList:
+      - enemyType: 0
+        spawnPointIndex: 0
       instruction: Aim at the Guard enemy and eliminate it.
       instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
@@ -53,9 +55,40 @@ MonoBehaviour:
       allowShooting: 1
     - tutorialAction: 5
       tutorialActionText: PATROL ENEMY
-      requiredEnemyTypeList: 01000000
+      requiredEnemySpawnDataList:
+      - enemyType: 1
+        spawnPointIndex: 1
       instruction: Aim at the Patrol enemy and eliminate it.
       instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
+      showOverlay: 0
+      allowShooting: 1
+    - tutorialAction: 6
+      tutorialActionText: SHIELD ENEMY
+      requiredEnemySpawnDataList:
+      - enemyType: 2
+        spawnPointIndex: 0
+      instruction: Aim at the Shield enemy and eliminate it.
+      instructionButtonMapSprite: {fileID: 0}
+      instructionContainerSize: 332
+      showOverlay: 0
+      allowShooting: 1
+  - tutorialGroupName: Teleport Ability
+    tutorialGoalInfo: Learn to teleport after shooting to move around the map
+    tutorialStepsList:
+    - tutorialAction: 7
+      tutorialActionText: TELEPORT ABILITY
+      requiredEnemySpawnDataList:
+      - enemyType: 0
+        spawnPointIndex: 0
+      - enemyType: 1
+        spawnPointIndex: 1
+      - enemyType: 2
+        spawnPointIndex: 2
+      - enemyType: 2
+        spawnPointIndex: 3
+      instruction: Teleport around the map & eliminate all enemies
+      instructionButtonMapSprite: {fileID: 0}
+      instructionContainerSize: 350
       showOverlay: 0
       allowShooting: 1
