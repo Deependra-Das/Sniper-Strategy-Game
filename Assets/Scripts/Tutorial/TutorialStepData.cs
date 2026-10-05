@@ -12,7 +12,7 @@ namespace SniperStrategyGame.Tutorial
         public string tutorialActionText;
 
         [Header("Enemies Required For This Step")]
-        public List<EnemyTypeEnum> requiredEnemyTypeList;
+        public List<TutorialEnemySpawnData> requiredEnemySpawnDataList;
 
         [TextArea(2, 4)]
         public string instruction;
