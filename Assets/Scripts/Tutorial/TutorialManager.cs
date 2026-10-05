@@ -129,6 +129,11 @@ namespace SniperStrategyGame.Tutorial
 
             RaiseActivateEnemiesEvent();
             RaiseTogglePlyerShootAbilityEvent(currentStep.allowShooting);
+
+            if(currentStep.tutorialAction == TutorialActionEnum.TeleportAbility)
+            {
+                RaiseActivatePlayerTeleportAbilityEvent();
+            }
         }
 
         private void SpawnEnemy(TutorialEnemySpawnData enemyData)
@@ -158,8 +163,7 @@ namespace SniperStrategyGame.Tutorial
             _aliveEnemies.Add(enemy);
             _currentStepEnemies.Add(enemy);
 
-            RaiseEnemySpawnedEvent(enemy);
-            
+            RaiseEnemySpawnedEvent(enemy);            
         }
 
         private PatrolPath GetPatrolPath(int index)
@@ -478,6 +482,11 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseTogglePlyerShootAbilityEvent(bool canShoot)
         {
             _eventBusServiceObj.Publish(new TogglePlyerShootAbilityEvent(canShoot));
+        }
+
+        private void RaiseActivatePlayerTeleportAbilityEvent()
+        {
+            _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
         }
     }
 }
