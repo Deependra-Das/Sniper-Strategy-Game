@@ -12,9 +12,7 @@ namespace SniperStrategyGame.Tutorial
     {
         [SerializeField] private float _stepTransitionDelay = 1f;
         [SerializeField] private Tutorial_SO _tutorialSequenceSO;
-        [SerializeField] private List<Transform> _guardSpawnPointList;
-        [SerializeField] private List<Transform> _shieldSpawnPointList;
-        [SerializeField] private List<Transform> _patrolSpawnPointList;
+        [SerializeField] private List<Transform> _enemySpawnPointList;
         [SerializeField] private List<PatrolPath> _patrolPathList;
 
         private readonly List<BaseEnemy> _aliveEnemies = new();
@@ -121,11 +119,11 @@ namespace SniperStrategyGame.Tutorial
             _currentStepEnemies.Clear();
             RaiseTutorialStepStartedEvent(currentStep);
 
-            if (currentStep.requiredEnemyTypeList.Count > 0)
+            if (currentStep.requiredEnemySpawnDataList.Count > 0)
             {
-                foreach (EnemyTypeEnum enemyType in currentStep.requiredEnemyTypeList)
+                foreach (TutorialEnemySpawnData enemyData in currentStep.requiredEnemySpawnDataList)
                 {
-                    SpawnEnemyGroup(enemyType);
+                    SpawnEnemy(enemyData);
                 }
             }
 
@@ -133,42 +131,35 @@ namespace SniperStrategyGame.Tutorial
             RaiseTogglePlyerShootAbilityEvent(currentStep.allowShooting);
         }
 
-        private void SpawnEnemyGroup(EnemyTypeEnum enemyType)
+        private void SpawnEnemy(TutorialEnemySpawnData enemyData)
         {
-            if (!_enemyServiceObj.TryGetEnemyPrefab(enemyType, out BaseEnemy enemyPrefab))
+            if (!_enemyServiceObj.TryGetEnemyPrefab(enemyData.enemyType, out BaseEnemy enemyPrefab))
             {
-                Debug.LogError($"Missing prefab for {enemyType}");
+                Debug.LogError($"Missing prefab for {enemyData}");
                 return;
             }
 
-            List<Transform> spawnPointList = GetSpawnPointTransformListByEnemyType(enemyType);
+            Transform spawnPointTransform = GetSpawnPointTransformByIndex(enemyData.spawnPointIndex);
 
-            if (spawnPointList == null || spawnPointList.Count <= 0)
+            if (spawnPointTransform == null)
             {
-                Debug.LogWarning($"No spawn points configured for {enemyType}");
+                Debug.LogWarning($"No spawn point Transform configured for Spawn Point Index : {enemyData.spawnPointIndex}");
                 return;
             }
+           
+            BaseEnemy enemy = Instantiate(enemyPrefab, spawnPointTransform.position, spawnPointTransform.rotation);
+            enemy.Initialize();
 
-            for (int j = 0; j < spawnPointList.Count; j++)
+            if (enemy is PatrolEnemy patrolEnemy)
             {
-                Transform spawnPoint = spawnPointList[j];
-
-                if (spawnPoint == null) continue;
-
-                BaseEnemy enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
-
-                enemy.Initialize();
-
-                if (enemy is PatrolEnemy patrolEnemy)
-                {
-                    patrolEnemy.SetPatrolPath(GetPatrolPath(j));
-                }
-
-                _aliveEnemies.Add(enemy);
-                _currentStepEnemies.Add(enemy);
-
-                RaiseEnemySpawnedEvent(enemy);
+                patrolEnemy.SetPatrolPath(GetPatrolPath(0));
             }
+
+            _aliveEnemies.Add(enemy);
+            _currentStepEnemies.Add(enemy);
+
+            RaiseEnemySpawnedEvent(enemy);
+            
         }
 
         private PatrolPath GetPatrolPath(int index)
@@ -182,16 +173,9 @@ namespace SniperStrategyGame.Tutorial
             return _patrolPathList[index];
         }
 
-        private List<Transform> GetSpawnPointTransformListByEnemyType(EnemyTypeEnum enemyType)
+        private Transform GetSpawnPointTransformByIndex(int index)
         {
-            return enemyType switch
-            {
-                EnemyTypeEnum.Guard => _guardSpawnPointList,
-                EnemyTypeEnum.Shield => _shieldSpawnPointList,
-                EnemyTypeEnum.Patrol => _patrolSpawnPointList,
-
-                _ => null
-            };
+            return _enemySpawnPointList[index];
         }
 
         private void AdvanceToNextTutorialGroup()
