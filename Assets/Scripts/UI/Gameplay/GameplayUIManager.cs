@@ -16,6 +16,7 @@ namespace SniperStrategyGame.UI
         [SerializeField] private GameObject _scopeInButtonContainer;
         [SerializeField] private GameObject _scopeOutButtonContainer;
         [SerializeField] private GameObject _missionInfoContainer;
+        [SerializeField] private Image _missionNameBackground;
         [SerializeField] private TMP_Text _missionNameText;
         [SerializeField] private TMP_Text _missionGoalInfoText;
         [SerializeField] private GameObject _missionNameContainer;
@@ -27,13 +28,18 @@ namespace SniperStrategyGame.UI
         [SerializeField] private Vector2 _missionGoalContainerStartPosition;
         [SerializeField] private Vector2 _missionGoalContainerEndPosition;
         [SerializeField] private float _slideAnimationDuration;
+        [SerializeField] private float _revealDuration = 1f;
+        [SerializeField] private float _dissolveDuration = 0.5f;
 
-
+        private Color _missionNameTextOriginalColor;
+        private Material _missionBGMaterial;
         private EventBusService _eventBusServiceObj;
 
         private void Awake()
         {
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+            _missionBGMaterial = _missionNameBackground != null ? _missionNameBackground.material : null;
+            _missionNameTextOriginalColor = _missionNameText.color;
         }
 
         private void OnEnable() => SubscribeToEvents();
@@ -124,6 +130,7 @@ namespace SniperStrategyGame.UI
 
         private IEnumerator ShowMissionInfo()
         {
+            StartCoroutine(RevealMissionNameBackground());
             StartCoroutine(AnimateSlideFadeUI(_missionNameContainer, _missionNameContainerCanvasGroup,
                 _missionNameContainerStartPosition, _missionNameContainerEndPosition, FadeTypeEnum.FadeIn, _slideAnimationDuration));
 
@@ -135,6 +142,7 @@ namespace SniperStrategyGame.UI
 
         private IEnumerator HideMissionInfo()
         {
+            StartCoroutine(DissolveMissionNameBackground());
             StartCoroutine(AnimateSlideFadeUI(_missionGoalContainer, _missionGoalContainerCanvasGroup,
                 _missionGoalContainerEndPosition, _missionGoalContainerStartPosition, FadeTypeEnum.FadeOut, _slideAnimationDuration));
 
@@ -173,7 +181,6 @@ namespace SniperStrategyGame.UI
                 timer = Mathf.SmoothStep(0f, 1f, timer);
 
                 rectTransform.anchoredPosition = Vector2.Lerp(startPosition, endPosition, timer);
-
                 canvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, timer);
 
                 yield return null;
@@ -194,6 +201,60 @@ namespace SniperStrategyGame.UI
         private void ToggleMissionGoalContainer(bool value)
         {
             _missionGoalContainer.SetActive(value);
+        }
+
+        private IEnumerator RevealMissionNameBackground()
+        {
+            yield return AnimateMissionBackground(0f, 1f, _revealDuration);
+        }
+
+        private IEnumerator DissolveMissionNameBackground()
+        {
+            yield return AnimateMissionBackground(1f, 0f, _dissolveDuration);
+        }
+
+        private IEnumerator AnimateMissionBackground(float from, float to, float duration)
+        {
+            if (_missionBGMaterial == null)
+                yield break;
+
+            int progressID = Shader.PropertyToID("_Progress");
+
+            _missionBGMaterial.SetFloat(progressID, from);
+            SetMissionNameTextAlpha(from);
+
+            if (duration <= 0f)
+            {
+                _missionBGMaterial.SetFloat(progressID, to);
+                SetMissionNameTextAlpha(to);
+                yield break;
+            }
+
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+
+                float progress = Mathf.Lerp(from, to, Mathf.Clamp01(elapsed / duration));
+                _missionBGMaterial.SetFloat(progressID, progress);
+                SetMissionNameTextAlpha(progress);
+
+                yield return null;
+            }
+
+            _missionBGMaterial.SetFloat(progressID, to);
+            SetMissionNameTextAlpha(to);
+        }
+
+        private void SetMissionNameTextAlpha(float alpha)
+        {
+            if (_missionNameText == null)
+                return;
+
+            Color color = _missionNameTextOriginalColor;
+            color.a *= alpha;
+            _missionNameText.color = color;
         }
     }
 }

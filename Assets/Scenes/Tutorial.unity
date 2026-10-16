@@ -5817,6 +5817,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5985920191622769577, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
+      propertyPath: _revealDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5985920191622769577, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
+      propertyPath: _dissolveDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5985920191622769577, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
+      propertyPath: _missionNameBackground
+      value: 
+      objectReference: {fileID: 1548607911}
     - target: {fileID: 5986546672620687856, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -5942,6 +5954,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8393208275766685915, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
   m_PrefabInstance: {fileID: 1548607906}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1548607911 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2136207140999538479, guid: 10cee5ffc6e806942b2065425ae13d16, type: 3}
+  m_PrefabInstance: {fileID: 1548607906}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1001 &1572912613
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6467,8 +6490,8 @@ MonoBehaviour:
   _continueTutorialButton: {fileID: 954625517}
   _continueTutorialButtonText: {fileID: 1603538769}
   _backtToStageSelectionButton: {fileID: 369181857}
-  revealDuration: 0.5
-  dissolveDuration: 0.5
+  _revealDuration: 0.5
+  _dissolveDuration: 0.25
 --- !u!1 &1692781451
 GameObject:
   m_ObjectHideFlags: 0
