@@ -1,7 +1,9 @@
+using NUnit.Framework;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.SceneLoader;
 using SniperStrategyGame.Tutorial;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +21,7 @@ namespace SniperStrategyGame.UI
         [SerializeField] private RectTransform _scopeOutButtonContainer;
         [SerializeField] private RectTransform _shootButtonContainer;
 
+        [SerializeField] private Image _tutorialInstructionBackground;
         [SerializeField] private GameObject _tutorialInstructionContainer;
         [SerializeField] private Image _tutorialInstructionButtonMapImage;
         [SerializeField] private GameObject _tutorialInstructionSeparator;
@@ -29,13 +32,19 @@ namespace SniperStrategyGame.UI
         [SerializeField] private TMP_Text _continueTutorialButtonText;
         [SerializeField] private Button _backtToStageSelectionButton;
 
+        [SerializeField] private float _revealDuration = 0.5f;
+        [SerializeField] private float _dissolveDuration = 0.25f;
+
         private EventBusService _eventBusServiceObj;
         private RectTransform _tutorialInstructionContainerRectTransform;
         private RectTransform _tutorialInstructionTextRectTransform;
         private Material _overlayMaterial;
+        private Material _tutInstructionBGMaterial;
+        private Color _originalTextColor;
 
         private static readonly int HoleCenterID = Shader.PropertyToID("_HoleCenter");
         private static readonly int HoleSizeID = Shader.PropertyToID("_HoleSize");
+        private static readonly int ProgressID = Shader.PropertyToID("_Progress");
 
         private void Awake()
         {
@@ -44,6 +53,8 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj = services.Get<EventBusService>();
             _tutorialInstructionContainerRectTransform = _tutorialInstructionContainer.GetComponent<RectTransform>();
             _tutorialInstructionTextRectTransform = _tutorialInstructionText.GetComponent<RectTransform>();
+            _tutInstructionBGMaterial = _tutorialInstructionBackground != null ? _tutorialInstructionBackground.material : null;
+            _originalTextColor = _tutorialInstructionText.color;
         }
 
         private void Start()
@@ -145,7 +156,7 @@ namespace SniperStrategyGame.UI
         {
             TutorialStepData tutorialStepData = eventObj.TutorialStepData;
             SetupTutorialInstructionContent(tutorialStepData);
-            ToggleTutorialInstructionContainer(true);
+            StartCoroutine(RevealInstructionCoroutine());
             ToggleTutorialOverlay(false);
 
             if (tutorialStepData.showOverlay)
@@ -218,10 +229,62 @@ namespace SniperStrategyGame.UI
             _overlayMaterial.SetVector(HoleSizeID, size);
         }
 
+        private IEnumerator RevealInstructionCoroutine()
+        {
+            ToggleTutorialInstructionContainer(true);
+            _tutorialInstructionBackground.gameObject.SetActive(true);
+            
+            yield return AnimateProgress(0f, 1f, _revealDuration);
+        }
+
+        private IEnumerator DissolveInstructionCoroutine()
+        {
+            yield return AnimateProgress(1f, 0f, _dissolveDuration);
+
+            _tutorialInstructionBackground.gameObject.SetActive(false);
+            ToggleTutorialInstructionContainer(false);
+        }
+
+        private IEnumerator AnimateProgress(float from, float to, float duration)
+        {
+            _tutInstructionBGMaterial.SetFloat(ProgressID, from);
+            SetIntructionTextAlpha(from);
+
+            if (duration <= 0f)
+            {
+                _tutInstructionBGMaterial.SetFloat(ProgressID, to);
+                SetIntructionTextAlpha(to);
+                yield break;
+            }
+
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float progress = Mathf.Lerp(from, to, Mathf.Clamp01(elapsed / duration));
+
+                _tutInstructionBGMaterial.SetFloat(ProgressID, progress);
+                SetIntructionTextAlpha(progress);
+
+                yield return null;
+            }
+
+            _tutInstructionBGMaterial.SetFloat(ProgressID, to);
+            SetIntructionTextAlpha(to);
+        }
+
+        private void SetIntructionTextAlpha(float alpha)
+        {
+            Color color = _originalTextColor;
+            color.a *= alpha;
+            _tutorialInstructionText.color = color;
+        }
+
         private void OnTutorialStepCompleted(TutorialStepCompletedEvent eventObj)
         {
             ToggleTutorialOverlay(false);
-            ToggleTutorialInstructionContainer(false);
+            StartCoroutine(DissolveInstructionCoroutine());
         }
 
         private void OnPlayerShotTutorialUI(PlayerShotEvent eventObj)
