@@ -23,8 +23,6 @@ namespace SniperStrategyGame.UI
 
         [SerializeField] private Image _tutorialInstructionBackground;
         [SerializeField] private GameObject _tutorialInstructionContainer;
-        [SerializeField] private Image _tutorialInstructionButtonMapImage;
-        [SerializeField] private GameObject _tutorialInstructionSeparator;
         [SerializeField] private TMP_Text _tutorialInstructionText;
         [SerializeField] private GameObject _tutorialNotificationContainer;
         [SerializeField] private TMP_Text _tutorialNotificationText;
@@ -37,7 +35,6 @@ namespace SniperStrategyGame.UI
 
         private EventBusService _eventBusServiceObj;
         private RectTransform _tutorialInstructionContainerRectTransform;
-        private RectTransform _tutorialInstructionTextRectTransform;
         private Material _overlayMaterial;
         private Material _tutInstructionBGMaterial;
         private Color _originalTextColor;
@@ -52,7 +49,6 @@ namespace SniperStrategyGame.UI
 
             _eventBusServiceObj = services.Get<EventBusService>();
             _tutorialInstructionContainerRectTransform = _tutorialInstructionContainer.GetComponent<RectTransform>();
-            _tutorialInstructionTextRectTransform = _tutorialInstructionText.GetComponent<RectTransform>();
             _tutInstructionBGMaterial = _tutorialInstructionBackground != null ? _tutorialInstructionBackground.material : null;
             _originalTextColor = _tutorialInstructionText.color;
         }
@@ -170,18 +166,6 @@ namespace SniperStrategyGame.UI
         {
             _tutorialInstructionContainerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, tutorialStepData.instructionContainerSize);
             _tutorialInstructionText.text = tutorialStepData.instruction;
-
-            _tutorialInstructionTextRectTransform.offsetMin = new Vector2(20f, _tutorialInstructionTextRectTransform.offsetMin.y);
-            _tutorialInstructionButtonMapImage.gameObject.SetActive(false);
-            _tutorialInstructionSeparator.SetActive(false);
-
-            if (tutorialStepData.instructionButtonMapSprite!=null)
-            {
-                _tutorialInstructionTextRectTransform.offsetMin = new Vector2(68f, _tutorialInstructionTextRectTransform.offsetMin.y);
-                _tutorialInstructionButtonMapImage.sprite = tutorialStepData.instructionButtonMapSprite;
-                _tutorialInstructionButtonMapImage.gameObject.SetActive(true);
-                _tutorialInstructionSeparator.SetActive(true);
-            }
         }
         
         public void SetUpTutorialOverlay(TutorialActionEnum action)

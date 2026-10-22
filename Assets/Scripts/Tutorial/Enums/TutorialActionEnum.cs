@@ -12,6 +12,5 @@ namespace SniperStrategyGame.Tutorial
         PatrolEnemy,
         ShieldEnemy,
         TeleportAbility,
-        HighlightEnemy,
     }
 }

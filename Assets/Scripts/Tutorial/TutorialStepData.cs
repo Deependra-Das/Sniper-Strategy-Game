@@ -17,10 +17,6 @@ namespace SniperStrategyGame.Tutorial
         [TextArea(2, 4)]
         public string instruction;
 
-        [Header("Input")]
-        [Tooltip("Optional button/key map icon displayed with the instruction.")]
-        public Sprite instructionButtonMapSprite;
-
         public int instructionContainerSize;
         public bool showOverlay = false;
         public bool allowShooting = false;
