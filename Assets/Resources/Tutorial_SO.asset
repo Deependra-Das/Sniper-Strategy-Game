@@ -19,25 +19,26 @@ MonoBehaviour:
     - tutorialAction: 1
       tutorialActionText: SCOPE IN
       requiredEnemySpawnDataList: []
-      instruction: Press to scope in to aim down your sights
-      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      instructionContainerSize: 384
+      instruction: Press <sprite="input_keymouse_spritesheet" name="m_right"> to
+        scope in to aim down your sights
+      instructionContainerSize: 370
       showOverlay: 1
       allowShooting: 0
     - tutorialAction: 2
       tutorialActionText: SCOPE OUT
       requiredEnemySpawnDataList: []
-      instruction: Press to scope out to return to your normal view
-      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      instructionContainerSize: 430
+      instruction: Press <sprite="input_keymouse_spritesheet" name="m_right"> to
+        scope out to return to your normal view
+      instructionContainerSize: 415
       showOverlay: 1
       allowShooting: 0
     - tutorialAction: 3
       tutorialActionText: SHOOT
       requiredEnemySpawnDataList: []
-      instruction: Press to fire your gun at the Target after Scoped In
-      instructionButtonMapSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      instructionContainerSize: 450
+      instruction: Press <sprite="input_keymouse_spritesheet" name="m_right"> to
+        scope in & aim at the target. Press <sprite="input_keymouse_spritesheet"
+        name="m_left"> to shoot
+      instructionContainerSize: 478
       showOverlay: 1
       allowShooting: 1
   - tutorialGroupName: Enemy Types
@@ -49,7 +50,6 @@ MonoBehaviour:
       - enemyType: 0
         spawnPointIndex: 0
       instruction: Aim at the Guard enemy and eliminate it.
-      instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
       showOverlay: 0
       allowShooting: 1
@@ -59,7 +59,6 @@ MonoBehaviour:
       - enemyType: 1
         spawnPointIndex: 1
       instruction: Aim at the Patrol enemy and eliminate it.
-      instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
       showOverlay: 0
       allowShooting: 1
@@ -69,7 +68,6 @@ MonoBehaviour:
       - enemyType: 2
         spawnPointIndex: 0
       instruction: Aim at the Shield enemy and eliminate it.
-      instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 332
       showOverlay: 0
       allowShooting: 1
@@ -88,7 +86,6 @@ MonoBehaviour:
       - enemyType: 2
         spawnPointIndex: 3
       instruction: Teleport around the map & eliminate all enemies
-      instructionButtonMapSprite: {fileID: 0}
       instructionContainerSize: 350
       showOverlay: 0
       allowShooting: 1

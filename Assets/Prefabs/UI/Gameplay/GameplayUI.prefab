@@ -427,7 +427,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1455787128, guid: 9dc19f1fdd7a8f34c9586880c08e645a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1078,7 +1078,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1455787128, guid: 9dc19f1fdd7a8f34c9586880c08e645a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1514,6 +1514,7 @@ MonoBehaviour:
   _scopeInButtonContainer: {fileID: 6672592070093170997}
   _scopeOutButtonContainer: {fileID: 7200662199239270549}
   _missionInfoContainer: {fileID: 2136986090073588596}
+  _missionNameBackground: {fileID: 0}
   _missionNameText: {fileID: 4336048707394343285}
   _missionGoalInfoText: {fileID: 8867867654996921215}
   _missionNameContainer: {fileID: 8812660986898424423}
@@ -1525,6 +1526,8 @@ MonoBehaviour:
   _missionGoalContainerStartPosition: {x: 0, y: 32}
   _missionGoalContainerEndPosition: {x: 0, y: 0}
   _slideAnimationDuration: 0.5
+  _revealDuration: 1
+  _dissolveDuration: 0.5
 --- !u!1 &8812660986898424423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1828,7 +1831,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1875642067, guid: 9dc19f1fdd7a8f34c9586880c08e645a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
