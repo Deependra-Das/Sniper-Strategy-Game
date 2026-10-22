@@ -49,14 +49,15 @@ namespace SniperStrategyGame.UI
 
             _eventBusServiceObj = services.Get<EventBusService>();
             _tutorialInstructionContainerRectTransform = _tutorialInstructionContainer.GetComponent<RectTransform>();
-            _tutInstructionBGMaterial = _tutorialInstructionBackground != null ? _tutorialInstructionBackground.material : null;
+            _overlayMaterial = new Material(_tutorialOverlayMaterial);
+            _tutorialOverlayImage.material = _overlayMaterial;
+            _tutInstructionBGMaterial = new Material(_tutorialInstructionBackground.material);
+            _tutorialInstructionBackground.material = _tutInstructionBGMaterial;
             _originalTextColor = _tutorialInstructionText.color;
         }
 
         private void Start()
         {
-            _overlayMaterial = new Material(_tutorialOverlayMaterial);
-            _tutorialOverlayImage.material = _overlayMaterial;
             ToggleTutorialOverlay(false);
             ToggleTutorialInstructionContainer(false);
             ToggleTutorialNotificationContainer(false);
@@ -276,7 +277,6 @@ namespace SniperStrategyGame.UI
             ToggleTutorialOverlay(false);
         }
 
-
         private void OnDestroy()
         {
             UnsubscribeToEvents();
@@ -285,6 +285,12 @@ namespace SniperStrategyGame.UI
             {
                 Destroy(_overlayMaterial);
                 _overlayMaterial = null;
+            }
+
+            if (_tutInstructionBGMaterial != null)
+            {
+                Destroy(_tutInstructionBGMaterial);
+                _tutInstructionBGMaterial = null;
             }
         }
     }

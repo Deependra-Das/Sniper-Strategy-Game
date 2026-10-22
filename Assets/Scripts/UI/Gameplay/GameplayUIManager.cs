@@ -38,7 +38,8 @@ namespace SniperStrategyGame.UI
         private void Awake()
         {
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
-            _missionBGMaterial = _missionNameBackground != null ? _missionNameBackground.material : null;
+            _missionBGMaterial = new Material(_missionNameBackground.material);
+            _missionNameBackground.material = _missionBGMaterial;
             _missionNameTextOriginalColor = _missionNameText.color;
         }
 
@@ -255,6 +256,17 @@ namespace SniperStrategyGame.UI
             Color color = _missionNameTextOriginalColor;
             color.a *= alpha;
             _missionNameText.color = color;
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeToEvents();
+
+            if (_missionBGMaterial != null)
+            {
+                Destroy(_missionBGMaterial);
+                _missionBGMaterial = null;
+            }
         }
     }
 }
