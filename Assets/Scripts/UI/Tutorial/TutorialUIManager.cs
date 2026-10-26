@@ -21,14 +21,23 @@ namespace SniperStrategyGame.UI
         [SerializeField] private RectTransform _scopeOutButtonContainer;
         [SerializeField] private RectTransform _shootButtonContainer;
 
+        [Header("Tutorial Instruction")]
         [SerializeField] private Image _tutorialInstructionBackground;
         [SerializeField] private GameObject _tutorialInstructionContainer;
         [SerializeField] private TMP_Text _tutorialInstructionText;
+
+        [Header("Tutorial Notification")]
         [SerializeField] private GameObject _tutorialNotificationContainer;
         [SerializeField] private TMP_Text _tutorialNotificationText;
         [SerializeField] private Button _continueTutorialButton;
         [SerializeField] private TMP_Text _continueTutorialButtonText;
         [SerializeField] private Button _backtToStageSelectionButton;
+
+        [Header("Tutorial Pause Menu")]
+        [SerializeField] private Button _pauseTutorialButton;
+        [SerializeField] private Button _resumeTutorialButton;
+        [SerializeField] private Button _restartTutorialButton;
+        [SerializeField] private Button _exitTutorialButton;
 
         [SerializeField] private float _revealDuration = 0.5f;
         [SerializeField] private float _dissolveDuration = 0.25f;
@@ -68,6 +77,11 @@ namespace SniperStrategyGame.UI
         {
             _continueTutorialButton.onClick.AddListener(OnContinueTutorialButtonClicked);
             _backtToStageSelectionButton.onClick.AddListener(OnBackToStageSelectionButtonClicked);
+            _pauseTutorialButton.onClick.AddListener(OnPauseTutorialButtonClicked);
+            _resumeTutorialButton.onClick.AddListener(OnResumeTutorialButtonClicked);
+            _restartTutorialButton.onClick.AddListener(OnRestartTutorialButtonClicked);
+            _exitTutorialButton.onClick.AddListener(OnExitTutorialButtonClicked);
+
             _eventBusServiceObj.Subscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
@@ -78,6 +92,12 @@ namespace SniperStrategyGame.UI
         private void UnsubscribeToEvents()
         {
             _continueTutorialButton.onClick.RemoveListener(OnContinueTutorialButtonClicked);
+            _backtToStageSelectionButton.onClick.RemoveListener(OnBackToStageSelectionButtonClicked);
+            _pauseTutorialButton.onClick.RemoveListener(OnPauseTutorialButtonClicked);
+            _resumeTutorialButton.onClick.RemoveListener(OnResumeTutorialButtonClicked);
+            _restartTutorialButton.onClick.RemoveListener(OnRestartTutorialButtonClicked);
+            _exitTutorialButton.onClick.RemoveListener(OnExitTutorialButtonClicked);
+
             _eventBusServiceObj.Unsubscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
@@ -275,6 +295,22 @@ namespace SniperStrategyGame.UI
         private void OnPlayerShotTutorialUI(PlayerShotEvent eventObj)
         {
             ToggleTutorialOverlay(false);
+        }
+
+        private void OnPauseTutorialButtonClicked()
+        {
+        }
+
+        private void OnResumeTutorialButtonClicked()
+        {
+        }
+
+        private void OnRestartTutorialButtonClicked()
+        {
+        }
+
+        private void OnExitTutorialButtonClicked()
+        {
         }
 
         private void OnDestroy()
