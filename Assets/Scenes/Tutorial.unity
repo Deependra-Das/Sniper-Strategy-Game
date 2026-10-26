@@ -6324,7 +6324,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1423554528}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: TopPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7159,6 +7159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fc43bde080e47e47b80e9a772bd8ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Tutorial.TutorialManager
+  _inputActionObj: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _stepTransitionDelay: 1
   _tutorialSequenceSO: {fileID: 11400000, guid: 11e44ef018a355240a8443d1994edaa1, type: 2}
   _enemySpawnPointList:
@@ -7601,6 +7602,10 @@ MonoBehaviour:
   _continueTutorialButton: {fileID: 954625517}
   _continueTutorialButtonText: {fileID: 1603538769}
   _backtToStageSelectionButton: {fileID: 369181857}
+  _pauseTutorialButton: {fileID: 589044976}
+  _resumeTutorialButton: {fileID: 2004916384}
+  _restartTutorialButton: {fileID: 27900169}
+  _exitTutorialButton: {fileID: 1271222076}
   _revealDuration: 0.5
   _dissolveDuration: 0.25
 --- !u!1 &1692781451

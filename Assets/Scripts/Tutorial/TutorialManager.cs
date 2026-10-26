@@ -1,15 +1,20 @@
-using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using SniperStrategyGame.Enemy;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Path;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.Timeline.DirectorControlPlayable;
 
 namespace SniperStrategyGame.Tutorial
 {
     public class TutorialManager : MonoBehaviour
     {
+        [Header("Input")]
+        [SerializeField] private InputActionAsset _inputActionObj;
+
         [SerializeField] private float _stepTransitionDelay = 1f;
         [SerializeField] private Tutorial_SO _tutorialSequenceSO;
         [SerializeField] private List<Transform> _enemySpawnPointList;
@@ -23,7 +28,16 @@ namespace SniperStrategyGame.Tutorial
         private EventBusService _eventBusServiceObj;
         private EnemyService _enemyServiceObj;
 
+        private InputActionMap _uiActionMap;
+        private InputAction _pauseAction;
+
         private bool _isTransitioning;
+        private bool _isPaused;
+        private bool _isTutorialStarted;
+        private bool _isCleanedUp;
+        private bool _isPlayerInputEnabled;
+        private bool _playerInputBeforePause;
+        private bool _canPauseTutorial;
 
         private void Awake()
         {
@@ -31,15 +45,30 @@ namespace SniperStrategyGame.Tutorial
 
             _eventBusServiceObj = services.Get<EventBusService>();
             _enemyServiceObj = services.Get<EnemyService>();
+
+            _uiActionMap = _inputActionObj.FindActionMap("UI");
+            _pauseAction = _uiActionMap.FindAction("Cancel");       
+        }
+
+        private void EnableInput()
+        {
+            _pauseAction.performed += TogglePause;
+        }
+
+        private void DisableInput()
+        {
+            _pauseAction.performed -= TogglePause;
         }
 
         private void OnEnable()
         {
+            EnableInput();
             SubscribeToEvents();
         }
 
         private void OnDisable()
         {
+            DisableInput();
             UnsubscribeFromEvents();
         }
 
@@ -132,6 +161,8 @@ namespace SniperStrategyGame.Tutorial
             {
                 RaiseActivatePlayerTeleportAbilityEvent();
             }
+
+            _canPauseTutorial = true;
         }
 
         private void SpawnEnemy(TutorialEnemySpawnData enemyData)
@@ -467,6 +498,27 @@ namespace SniperStrategyGame.Tutorial
             RaiseToggleCursorEventEvent(false);
         }
 
+        private void TogglePause(InputAction.CallbackContext context)
+        {
+            PauseTutorial();
+        }
+
+        public void PauseTutorial()
+        {
+            if (_isPaused || !_canPauseTutorial ||
+                _isTransitioning || _isCleanedUp)
+                return;
+
+            _playerInputBeforePause = _isPlayerInputEnabled;
+
+            _isPaused = true;
+            DisablePlayerInput();
+
+            Time.timeScale = 0f;
+
+            Debug.Log("Tutorial Paused");
+        }
+
         private void RaiseTogglePlayerInputEventEvent(bool value)
         {
             _eventBusServiceObj.Publish(new TogglePlayerInputEvent(value));
@@ -520,6 +572,13 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseActivatePlayerTeleportAbilityEvent()
         {
             _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
+        }
+
+
+
+        public void OnPlayerShotFired()
+        {
+            _canPauseTutorial = false;
         }
     }
 }
