@@ -79,6 +79,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnScopeOut);
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
+            _eventBusServiceObj.Subscribe<TutorialResumeEvent>(OnResumeTutorial);
         }
 
         private void UnsubscribeFromEvents()
@@ -503,7 +504,7 @@ namespace SniperStrategyGame.Tutorial
             PauseTutorial();
         }
 
-        public void PauseTutorial()
+        private void PauseTutorial()
         {
             if (_isPaused || !_canPauseTutorial ||
                 _isTransitioning || _isCleanedUp)
@@ -513,10 +514,19 @@ namespace SniperStrategyGame.Tutorial
 
             _isPaused = true;
             DisablePlayerInput();
-
+            EnableCursor();
+            RaiseTutorialPauseEventEvent();
             Time.timeScale = 0f;
+        }
 
-            Debug.Log("Tutorial Paused");
+        private void OnResumeTutorial(TutorialResumeEvent eventObj)
+        {
+            ResumeTutorial();
+        }
+
+        private void ResumeTutorial()
+        {
+
         }
 
         private void RaiseTogglePlayerInputEventEvent(bool value)
@@ -574,11 +584,20 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
         }
 
-
+        private void RaiseTutorialPauseEventEvent()
+        {
+            _eventBusServiceObj.Publish(new TutorialPauseEvent());
+        }
 
         public void OnPlayerShotFired()
         {
             _canPauseTutorial = false;
         }
+
+        private void OnDestroy()
+        {
+            _pauseAction.Dispose();
+        }
+
     }
 }

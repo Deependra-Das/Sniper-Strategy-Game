@@ -34,6 +34,7 @@ namespace SniperStrategyGame.UI
         [SerializeField] private Button _backtToStageSelectionButton;
 
         [Header("Tutorial Pause Menu")]
+        [SerializeField] private GameObject _tutorialPauseMenuContainer;
         [SerializeField] private Button _pauseTutorialButton;
         [SerializeField] private Button _resumeTutorialButton;
         [SerializeField] private Button _restartTutorialButton;
@@ -87,6 +88,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
+            _eventBusServiceObj.Subscribe<TutorialPauseEvent>(OnTutorialPauseUI);
         }
 
         private void UnsubscribeToEvents()
@@ -103,6 +105,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
+            _eventBusServiceObj.Unsubscribe<TutorialPauseEvent>(OnTutorialPauseUI);
         }
 
         private void OnContinueTutorialButtonClicked()
@@ -297,20 +300,37 @@ namespace SniperStrategyGame.UI
             ToggleTutorialOverlay(false);
         }
 
-        private void OnPauseTutorialButtonClicked()
+        private void OnTutorialPauseUI(TutorialPauseEvent eventObj)
         {
+            ToggleTutorialPauseMenuContainer(true);
         }
+
+        private void ToggleTutorialPauseMenuContainer(bool value)
+        {
+            _tutorialPauseMenuContainer.gameObject.SetActive(value);
+        }
+
+        private void OnPauseTutorialButtonClicked() { }
 
         private void OnResumeTutorialButtonClicked()
         {
+            ToggleTutorialPauseMenuContainer(false);
+            RaiseTutorialResumeEventEvent();
         }
 
         private void OnRestartTutorialButtonClicked()
         {
+            ToggleTutorialPauseMenuContainer(false);
         }
 
         private void OnExitTutorialButtonClicked()
         {
+            ToggleTutorialPauseMenuContainer(false);
+        }
+
+        private void RaiseTutorialResumeEventEvent()
+        {
+            _eventBusServiceObj.Publish(new TutorialResumeEvent());
         }
 
         private void OnDestroy()

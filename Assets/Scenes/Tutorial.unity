@@ -7602,6 +7602,7 @@ MonoBehaviour:
   _continueTutorialButton: {fileID: 954625517}
   _continueTutorialButtonText: {fileID: 1603538769}
   _backtToStageSelectionButton: {fileID: 369181857}
+  _tutorialPauseMenuContainer: {fileID: 359577003}
   _pauseTutorialButton: {fileID: 589044976}
   _resumeTutorialButton: {fileID: 2004916384}
   _restartTutorialButton: {fileID: 27900169}
