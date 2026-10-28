@@ -89,6 +89,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
             _eventBusServiceObj.Subscribe<TutorialPauseEvent>(OnTutorialPauseUI);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
         }
 
         private void UnsubscribeToEvents()
@@ -106,6 +107,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
             _eventBusServiceObj.Unsubscribe<TutorialPauseEvent>(OnTutorialPauseUI);
+            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
         }
 
         private void OnContinueTutorialButtonClicked()
@@ -326,6 +328,16 @@ namespace SniperStrategyGame.UI
         private void OnExitTutorialButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
+        }
+
+        private void OnTogglePauseButtonVisibilityTutorialUI(TogglePauseButtonVisibilityEvent eventObj)
+        {
+            TogglePauseTutorialButtonVisibility(eventObj.IsVisible);
+        }
+
+        private void TogglePauseTutorialButtonVisibility(bool value)
+        {
+            _pauseTutorialButton.gameObject.SetActive(value);
         }
 
         private void RaiseTutorialResumeEventEvent()

@@ -80,6 +80,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
             _eventBusServiceObj.Subscribe<TutorialResumeEvent>(OnResumeTutorial);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
         private void UnsubscribeFromEvents()
@@ -89,6 +90,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Unsubscribe<ContinueTutorialEvent>(OnContinueTutorial);
+            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
         private void Start()
@@ -589,9 +591,9 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Publish(new TutorialPauseEvent());
         }
 
-        public void OnPlayerShotFired()
+        private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
         {
-            _canPauseTutorial = false;
+            _canPauseTutorial = eventObj.IsVisible;
         }
 
         private void OnDestroy()

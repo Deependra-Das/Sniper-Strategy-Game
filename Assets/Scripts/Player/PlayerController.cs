@@ -237,8 +237,9 @@ namespace SniperStrategyGame.Player
 
             if (!_isScoped) return;
 
+            RaiseTogglePauseButtonVisibilityEvent(false);
             StartCoroutine(ShootRoutine());
-            _eventBusServiceObj.Publish(new PlayerShotEvent());
+            RaisePlayerShotEvent();
         }
 
         private void EnableScope()
@@ -345,6 +346,7 @@ namespace SniperStrategyGame.Player
             SwitchToPlayerCamera();
             RestoreRenderingGun();
             _canLook = true;
+            RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
         private void OnPlayerBulletMissedEnemyEvent(PlayerBulletMissedEnemyEvent eventObj)
@@ -352,6 +354,7 @@ namespace SniperStrategyGame.Player
             SwitchToPlayerCamera();
             RestoreRenderingGun();
             _canLook = true;
+            RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
         private void OnActivatePlayerTeleportAbilityEvent(ActivatePlayerTeleportAbilityEvent eventObj)
@@ -432,6 +435,16 @@ namespace SniperStrategyGame.Player
         private void OnTogglePlayerShootAbilityEvent(TogglePlyerShootAbilityEvent eventObj)
         {
             _canShoot = eventObj.IsEnabled;
+        }
+
+        private void RaisePlayerShotEvent() 
+        {
+            _eventBusServiceObj.Publish(new PlayerShotEvent());
+        }
+
+        private void RaiseTogglePauseButtonVisibilityEvent(bool value)
+        {
+            _eventBusServiceObj.Publish(new TogglePauseButtonVisibilityEvent(value));
         }
     }
 }
