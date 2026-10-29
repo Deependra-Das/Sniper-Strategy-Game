@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.SceneLoader;
@@ -28,17 +27,18 @@ namespace SniperStrategyGame.UI
 
         [Header("Tutorial Notification")]
         [SerializeField] private GameObject _tutorialNotificationContainer;
-        [SerializeField] private TMP_Text _tutorialNotificationText;
-        [SerializeField] private Button _continueTutorialButton;
-        [SerializeField] private TMP_Text _continueTutorialButtonText;
-        [SerializeField] private Button _backtToStageSelectionButton;
+        [SerializeField] private TMP_Text _tutorialNameNotificationText;
+        [SerializeField] private Button _continueTutorialNotification_Button;
+        [SerializeField] private TMP_Text _continueTutorialNotification_ButtonText;
+        [SerializeField] private Button _restartTutorialNotification_Button;
+        [SerializeField] private Button _exitTutorialNotification_Button;
 
         [Header("Tutorial Pause Menu")]
         [SerializeField] private GameObject _tutorialPauseMenuContainer;
         [SerializeField] private Button _pauseTutorialButton;
-        [SerializeField] private Button _resumeTutorialButton;
-        [SerializeField] private Button _restartTutorialButton;
-        [SerializeField] private Button _exitTutorialButton;
+        [SerializeField] private Button _resumeTutorialPauseMenu_Button;
+        [SerializeField] private Button _restartTutorialPauseMenu_Button;
+        [SerializeField] private Button _exitTutorialPauseMenu_Button;
 
         [SerializeField] private float _revealDuration = 0.5f;
         [SerializeField] private float _dissolveDuration = 0.25f;
@@ -52,6 +52,8 @@ namespace SniperStrategyGame.UI
         private static readonly int HoleCenterID = Shader.PropertyToID("_HoleCenter");
         private static readonly int HoleSizeID = Shader.PropertyToID("_HoleSize");
         private static readonly int ProgressID = Shader.PropertyToID("_Progress");
+
+        private bool _wasTutorialNotificationActiveBeforePause;
 
         private void Awake()
         {
@@ -76,12 +78,14 @@ namespace SniperStrategyGame.UI
 
         private void SubscribeToEvents()
         {
-            _continueTutorialButton.onClick.AddListener(OnContinueTutorialButtonClicked);
-            _backtToStageSelectionButton.onClick.AddListener(OnBackToStageSelectionButtonClicked);
+            _continueTutorialNotification_Button.onClick.AddListener(OnContinueTutorialNotificationButtonClicked);
+            _restartTutorialNotification_Button.onClick.AddListener(OnRestartTutorialNotificationButtonClicked);
+            _exitTutorialNotification_Button.onClick.AddListener(OnExitTutorialNotificationButtonClicked);
+
             _pauseTutorialButton.onClick.AddListener(OnPauseTutorialButtonClicked);
-            _resumeTutorialButton.onClick.AddListener(OnResumeTutorialButtonClicked);
-            _restartTutorialButton.onClick.AddListener(OnRestartTutorialButtonClicked);
-            _exitTutorialButton.onClick.AddListener(OnExitTutorialButtonClicked);
+            _resumeTutorialPauseMenu_Button.onClick.AddListener(OnResumeTutorialPauseMenuButtonClicked);
+            _restartTutorialPauseMenu_Button.onClick.AddListener(OnRestartTutorialPauseMenuButtonClicked);
+            _exitTutorialPauseMenu_Button.onClick.AddListener(OnExitTutorialPauseMenuButtonClicked);
 
             _eventBusServiceObj.Subscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
@@ -94,12 +98,14 @@ namespace SniperStrategyGame.UI
 
         private void UnsubscribeToEvents()
         {
-            _continueTutorialButton.onClick.RemoveListener(OnContinueTutorialButtonClicked);
-            _backtToStageSelectionButton.onClick.RemoveListener(OnBackToStageSelectionButtonClicked);
+            _continueTutorialNotification_Button.onClick.RemoveListener(OnContinueTutorialNotificationButtonClicked);
+            _restartTutorialNotification_Button.onClick.RemoveListener(OnRestartTutorialNotificationButtonClicked);
+            _exitTutorialNotification_Button.onClick.RemoveListener(OnExitTutorialNotificationButtonClicked);
+
             _pauseTutorialButton.onClick.RemoveListener(OnPauseTutorialButtonClicked);
-            _resumeTutorialButton.onClick.RemoveListener(OnResumeTutorialButtonClicked);
-            _restartTutorialButton.onClick.RemoveListener(OnRestartTutorialButtonClicked);
-            _exitTutorialButton.onClick.RemoveListener(OnExitTutorialButtonClicked);
+            _resumeTutorialPauseMenu_Button.onClick.RemoveListener(OnResumeTutorialPauseMenuButtonClicked);
+            _restartTutorialPauseMenu_Button.onClick.RemoveListener(OnRestartTutorialPauseMenuButtonClicked);
+            _exitTutorialPauseMenu_Button.onClick.RemoveListener(OnExitTutorialPauseMenuButtonClicked);
 
             _eventBusServiceObj.Unsubscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
@@ -110,21 +116,26 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
         }
 
-        private void OnContinueTutorialButtonClicked()
+        private void OnContinueTutorialNotificationButtonClicked()
         {
-            _tutorialNotificationContainer.SetActive(false);
+            ToggleTutorialNotificationContainer(false);
             _eventBusServiceObj.Publish(new ContinueTutorialEvent());
         }
 
-        private void OnBackToStageSelectionButtonClicked()
+        private void OnRestartTutorialNotificationButtonClicked()
         {
-            _tutorialNotificationContainer.SetActive(false);
+            ToggleTutorialNotificationContainer(false);
+        }
+        
+        private void OnExitTutorialNotificationButtonClicked()
+        {
+            ToggleTutorialNotificationContainer(false);
             GameManager.Instance.Services.Get<SceneLoaderService>().LoadScene(SceneNameEnum.StageSelection);
         }
 
         private void OnTutorialGroupCompleted(TutorialGroupCompletedEvent eventObj)
         {
-            SetupTutorialNotificationText($"{eventObj.CompletedGroupName} Tutorial completed!");
+            SetupTutorialNotificationText($"{eventObj.CompletedGroupName}");
             SetupContinueTutorialButtonText($"Continue to {eventObj.NextGroupName} tutorial.");
             ToggleContinueTutorialButton(true);
             ToggleBacktToStageSelectionButton(false);
@@ -133,7 +144,7 @@ namespace SniperStrategyGame.UI
 
         private void OnAllTutorialsCompleted(AllTutorialsCompletedEvent eventObj)
         {
-            SetupTutorialNotificationText("All Tutorials completed!");
+            SetupTutorialNotificationText("");
             ToggleContinueTutorialButton(false);
             ToggleBacktToStageSelectionButton(true);
             ToggleTutorialNotificationContainer(true);
@@ -141,12 +152,12 @@ namespace SniperStrategyGame.UI
 
         private void SetupTutorialNotificationText(string value)
         {
-            _tutorialNotificationText.text = value;
+            _tutorialNameNotificationText.text = value;
         }
 
         private void SetupContinueTutorialButtonText(string value)
         {
-            _continueTutorialButtonText.text = value;
+            _continueTutorialNotification_ButtonText.text = value;
         }
 
         private void ToggleTutorialNotificationContainer(bool value)
@@ -156,12 +167,12 @@ namespace SniperStrategyGame.UI
 
         private void ToggleContinueTutorialButton(bool value)
         {
-            _continueTutorialButton.gameObject.SetActive(value);
+            _continueTutorialNotification_Button.gameObject.SetActive(value);
         }
 
         private void ToggleBacktToStageSelectionButton(bool value)
         {
-            _backtToStageSelectionButton.gameObject.SetActive(value);
+            _exitTutorialNotification_Button.gameObject.SetActive(value);
         }
 
         private void ToggleTutorialOverlay(bool value)
@@ -304,6 +315,13 @@ namespace SniperStrategyGame.UI
 
         private void OnTutorialPauseUI(TutorialPauseEvent eventObj)
         {
+            _wasTutorialNotificationActiveBeforePause = _tutorialNotificationContainer.activeSelf;
+
+            if (_wasTutorialNotificationActiveBeforePause)
+            {
+                ToggleTutorialNotificationContainer(false);
+            }
+
             ToggleTutorialPauseMenuContainer(true);
         }
 
@@ -314,18 +332,25 @@ namespace SniperStrategyGame.UI
 
         private void OnPauseTutorialButtonClicked() { }
 
-        private void OnResumeTutorialButtonClicked()
+        private void OnResumeTutorialPauseMenuButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
+
+            if (_wasTutorialNotificationActiveBeforePause)
+            {
+                ToggleTutorialNotificationContainer(true);
+            }
+
+            _wasTutorialNotificationActiveBeforePause = false;
             RaiseTutorialResumeEventEvent();
         }
 
-        private void OnRestartTutorialButtonClicked()
+        private void OnRestartTutorialPauseMenuButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
         }
 
-        private void OnExitTutorialButtonClicked()
+        private void OnExitTutorialPauseMenuButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
         }

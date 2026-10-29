@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.Timeline.DirectorControlPlayable;
 
 namespace SniperStrategyGame.Tutorial
 {
@@ -241,6 +240,7 @@ namespace SniperStrategyGame.Tutorial
         {
             yield return new WaitForSeconds(_stepTransitionDelay);
 
+            RaiseTogglePauseButtonVisibilityEvent(true);
             Debug.Log($"Starting Tutorial Group: {nextGroup.tutorialGroupName}");
             RaiseUpdateMissionInfoEvent(nextGroup);
             ExecuteCurrentTutorialStep();
@@ -307,6 +307,7 @@ namespace SniperStrategyGame.Tutorial
             }
 
             Debug.Log($"Tutorial Group Completed: {completedGroup.tutorialGroupName}");
+            RaiseTogglePauseButtonVisibilityEvent(false);
             RaiseTutorialGroupCompletedEvent(completedGroup.tutorialGroupName, nextGroup.tutorialGroupName);       
         }
 
@@ -483,11 +484,13 @@ namespace SniperStrategyGame.Tutorial
 
         private void EnablePlayerInput()
         {
+            _isPlayerInputEnabled = true;
             RaiseTogglePlayerInputEventEvent(true);
         }
 
         private void DisablePlayerInput()
         {
+            _isPlayerInputEnabled = false;
             RaiseTogglePlayerInputEventEvent(false);
         }
 
@@ -508,8 +511,7 @@ namespace SniperStrategyGame.Tutorial
 
         private void PauseTutorial()
         {
-            if (_isPaused || !_canPauseTutorial ||
-                _isTransitioning || _isCleanedUp)
+            if (_isPaused || !_canPauseTutorial || _isTransitioning || _isCleanedUp)
                 return;
 
             _playerInputBeforePause = _isPlayerInputEnabled;
@@ -528,7 +530,18 @@ namespace SniperStrategyGame.Tutorial
 
         private void ResumeTutorial()
         {
+            if (!_isPaused || _isCleanedUp)
+                return;
 
+            if (_playerInputBeforePause)
+            {
+                EnablePlayerInput();
+            }
+
+            _isPaused = false;
+            Time.timeScale = 1f;
+            DisableCursor();
+            RaiseTogglePlayerInputEventEvent(_playerInputBeforePause);
         }
 
         private void RaiseTogglePlayerInputEventEvent(bool value)
@@ -589,6 +602,11 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseTutorialPauseEventEvent()
         {
             _eventBusServiceObj.Publish(new TutorialPauseEvent());
+        }
+
+        private void RaiseTogglePauseButtonVisibilityEvent(bool value)
+        {
+            _eventBusServiceObj.Publish(new TogglePauseButtonVisibilityEvent(value));
         }
 
         private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
