@@ -348,6 +348,7 @@ namespace SniperStrategyGame.UI
         private void OnRestartTutorialPauseMenuButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
+            _eventBusServiceObj.Publish(new TutorialRestartEvent());
         }
 
         private void OnExitTutorialPauseMenuButtonClicked()

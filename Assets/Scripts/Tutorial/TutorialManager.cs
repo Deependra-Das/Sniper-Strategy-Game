@@ -20,6 +20,7 @@ namespace SniperStrategyGame.Tutorial
         [SerializeField] private List<PatrolPath> _patrolPathList;
 
         private readonly List<BaseEnemy> _currentStepEnemies = new();
+        private readonly List<BaseEnemy> _allSpawnedEnemies = new();
 
         private int _currentTutorialGroupIndex;
         private int _currentTutorialStepIndex;
@@ -79,6 +80,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
             _eventBusServiceObj.Subscribe<TutorialResumeEvent>(OnResumeTutorial);
+            _eventBusServiceObj.Subscribe<TutorialRestartEvent>(OnRestartTutorial);
             _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -89,6 +91,8 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
             _eventBusServiceObj.Unsubscribe<ContinueTutorialEvent>(OnContinueTutorial);
+            _eventBusServiceObj.Unsubscribe<TutorialResumeEvent>(OnResumeTutorial);
+            _eventBusServiceObj.Unsubscribe<TutorialRestartEvent>(OnRestartTutorial);
             _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -99,6 +103,11 @@ namespace SniperStrategyGame.Tutorial
 
         private void StartTutorial()
         {
+            if (_isTutorialStarted || _isCleanedUp)
+                return;
+
+            _isTutorialStarted = true;
+
             _currentTutorialGroupIndex = 0;
             _currentTutorialStepIndex = 0;
             _currentStepEnemies.Clear();
@@ -123,6 +132,7 @@ namespace SniperStrategyGame.Tutorial
 
             ExecuteCurrentTutorialStep();
             EnablePlayerInput();
+            DisableCursor();
         }
 
         private void ExecuteCurrentTutorialStep()
@@ -192,7 +202,7 @@ namespace SniperStrategyGame.Tutorial
             }
 
             _currentStepEnemies.Add(enemy);
-
+            _allSpawnedEnemies.Add(enemy);
             RaiseEnemySpawnedEvent(enemy);            
         }
 
@@ -455,7 +465,7 @@ namespace SniperStrategyGame.Tutorial
         private void RemoveDeadEnemy(BaseEnemy enemy)
         {
             _currentStepEnemies.Remove(enemy);
-
+            _allSpawnedEnemies.Remove(enemy);
             Destroy(enemy.gameObject);
         }
 
@@ -542,6 +552,62 @@ namespace SniperStrategyGame.Tutorial
             Time.timeScale = 1f;
             DisableCursor();
             RaiseTogglePlayerInputEventEvent(_playerInputBeforePause);
+        }
+
+        private void CleanUpTutorial()
+        {
+            if (_isCleanedUp)
+                return;
+
+            _isCleanedUp = true;
+
+            StopAllCoroutines();
+            DisablePlayerInput();
+
+            Time.timeScale = 1f;
+            _isPaused = false;
+            EnableCursor();
+
+            foreach (BaseEnemy enemy in _currentStepEnemies)
+            {
+                if (enemy != null)
+                {
+                    Destroy(enemy.gameObject);
+                }
+            }
+
+            _allSpawnedEnemies.Clear();
+            _currentStepEnemies.Clear();
+
+            _eventBusServiceObj.Publish(new ResetPlayerEvent());
+            _currentTutorialGroupIndex = 0;
+            _currentTutorialStepIndex = 0;
+
+            _isTransitioning = false;
+            _isPlayerInputEnabled = false;
+            _playerInputBeforePause = false;
+            _canPauseTutorial = false;
+            _isTutorialStarted = false;
+
+            Debug.Log("Tutorial Cleaned Up");
+        }
+
+        private void OnRestartTutorial(TutorialRestartEvent eventObj)
+        {
+            RestartTutorial();
+        }
+
+        private void RestartTutorial()
+        {
+            CleanUpTutorial();
+            _isCleanedUp = false;
+            _currentTutorialGroupIndex = 0;
+            _currentTutorialStepIndex = 0;
+
+            _isTransitioning = false;
+            _isPaused = false;
+            _isTutorialStarted = false;
+            StartTutorial();
         }
 
         private void RaiseTogglePlayerInputEventEvent(bool value)

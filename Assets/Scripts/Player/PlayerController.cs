@@ -58,6 +58,9 @@ namespace SniperStrategyGame.Player
         private Coroutine _scopeCoroutine;
         private float _normalFOV;
         private int playerGunLayerMask;
+        private Vector3 _initialPosition;
+        private Quaternion _initialRotation;
+
         private EventBusService _eventBusServiceObj;
         private BulletService _bulletServiceObj;
 
@@ -81,6 +84,7 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Subscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
             _eventBusServiceObj.Subscribe<ToggleCursorEvent>(OnToggleCursor);
             _eventBusServiceObj.Subscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
+            _eventBusServiceObj.Subscribe<ResetPlayerEvent>(OnResetPlayer);
         }
 
         protected virtual void UnsubscribeFromEvents()
@@ -91,10 +95,14 @@ namespace SniperStrategyGame.Player
             _eventBusServiceObj.Unsubscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
             _eventBusServiceObj.Unsubscribe<ToggleCursorEvent>(OnToggleCursor);
             _eventBusServiceObj.Unsubscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
+            _eventBusServiceObj.Unsubscribe<ResetPlayerEvent>(OnResetPlayer);
         }
 
         private void Awake()
         {
+            _initialPosition = transform.position;
+            _initialRotation = transform.rotation;
+
             _rigidbody = GetComponent<Rigidbody>();
             _capsuleCollider = GetComponent<CapsuleCollider>();
 
@@ -435,6 +443,30 @@ namespace SniperStrategyGame.Player
         private void OnTogglePlayerShootAbilityEvent(TogglePlyerShootAbilityEvent eventObj)
         {
             _canShoot = eventObj.IsEnabled;
+        }
+
+        private void OnResetPlayer(ResetPlayerEvent eventObj)
+        {
+            ResetPlayer();
+        }
+
+        private void ResetPlayer()
+        {
+            if (!TryGetGroundPosition(_initialPosition, out Vector3 groundPosition))
+            {
+                Debug.LogWarning($"Could not find ground below enemy at {_initialPosition}");
+            }
+
+            float groundOffset = GetGroundOffset();
+            Vector3 newPosition = new Vector3(_initialPosition.x, groundPosition.y + groundOffset, _initialPosition.z);
+
+            if (_rigidbody != null)
+            { 
+                _rigidbody.position = newPosition;
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+                Physics.SyncTransforms();
+            }
         }
 
         private void RaisePlayerShotEvent() 
