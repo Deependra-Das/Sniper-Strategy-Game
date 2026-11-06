@@ -2008,7 +2008,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2176
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -2778,7 +2778,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2176
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -4843,7 +4843,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2176
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -7969,7 +7969,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2176
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -9025,7 +9025,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2176
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -9417,6 +9417,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 518401729422313714, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1580261200748534766, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883936538848421965, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1899636608860289634, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 2146836470157243686, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.52
@@ -9457,13 +9473,57 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2442097264952438703, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2912222923919597536, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 3393776232550472831, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 3393776232550472831, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393776232550472831, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3583186103423043793, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3823728750807922714, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4888600572448895009, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963038823949599662, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6082018326386086331, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929679204028778338, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985496070092565594, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8099519655944458207, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8141959312410174533, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
       propertyPath: _mainCamera
@@ -9480,6 +9540,22 @@ PrefabInstance:
     - target: {fileID: 8141959312410174533, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
       propertyPath: _scopeOverlay
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8269775824671779942, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8338217633730161093, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 9168715606245862600, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 9188457320588994683, guid: 00e96ffc3d8d9474d88bafe58a1a8d61, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9606,6 +9682,18 @@ PrefabInstance:
     - target: {fileID: 8496308568213598817, guid: 1c2bd3f63d90f5a4bbcd35f6bd704d75, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8945684668180015248, guid: 1c2bd3f63d90f5a4bbcd35f6bd704d75, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8945684668180015248, guid: 1c2bd3f63d90f5a4bbcd35f6bd704d75, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8945684668180015248, guid: 1c2bd3f63d90f5a4bbcd35f6bd704d75, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.z
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
