@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 5548884343562126162}
   - component: {fileID: 68244147092917453}
   - component: {fileID: 8141959312410174533}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -200,7 +200,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: e4e0bf004a6da4548a059c2711f287e4, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -218,7 +218,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2731091710297528261}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: CameraPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
