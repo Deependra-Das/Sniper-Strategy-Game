@@ -5,6 +5,7 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEditor.EditorGUI;
 
 namespace SniperStrategyGame.Player
 {
@@ -489,13 +490,11 @@ namespace SniperStrategyGame.Player
             if (_pitch > 180f)
                 _pitch -= 360f;
 
-            _isScoped = false;
+            DisableScope();
             _canShoot = false;
             _canLook = true;
             _canTeleport = false;
 
-            _playerGunAnimator.SetBool("isScoped", false);
-            _playerCamera.Lens.FieldOfView = _normalFOV;
             _playerCamera.Priority = 20;
             _bulletCamera.Priority = 5;
 

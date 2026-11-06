@@ -133,6 +133,7 @@ namespace SniperStrategyGame.Tutorial
             ExecuteCurrentTutorialStep();
             EnablePlayerInput();
             DisableCursor();
+            RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
         private void ExecuteCurrentTutorialStep()
@@ -495,23 +496,23 @@ namespace SniperStrategyGame.Tutorial
         private void EnablePlayerInput()
         {
             _isPlayerInputEnabled = true;
-            RaiseTogglePlayerInputEventEvent(true);
+            RaiseTogglePlayerInputEvent(true);
         }
 
         private void DisablePlayerInput()
         {
             _isPlayerInputEnabled = false;
-            RaiseTogglePlayerInputEventEvent(false);
+            RaiseTogglePlayerInputEvent(false);
         }
 
         private void EnableCursor()
         {
-            RaiseToggleCursorEventEvent(true);
+            RaiseToggleCursorEvent(true);
         }
 
         private void DisableCursor()
         {
-            RaiseToggleCursorEventEvent(false);
+            RaiseToggleCursorEvent(false);
         }
 
         private void TogglePause(InputAction.CallbackContext context)
@@ -529,7 +530,7 @@ namespace SniperStrategyGame.Tutorial
             _isPaused = true;
             DisablePlayerInput();
             EnableCursor();
-            RaiseTutorialPauseEventEvent();
+            RaiseTutorialPauseEvent();
             Time.timeScale = 0f;
         }
 
@@ -551,7 +552,7 @@ namespace SniperStrategyGame.Tutorial
             _isPaused = false;
             Time.timeScale = 1f;
             DisableCursor();
-            RaiseTogglePlayerInputEventEvent(_playerInputBeforePause);
+            RaiseTogglePlayerInputEvent(_playerInputBeforePause);
         }
 
         private void CleanUpTutorial()
@@ -566,7 +567,6 @@ namespace SniperStrategyGame.Tutorial
 
             Time.timeScale = 1f;
             _isPaused = false;
-            RaiseTogglePauseButtonVisibilityEvent(false);
 
             foreach (BaseEnemy enemy in _allSpawnedEnemies)
             {
@@ -604,12 +604,12 @@ namespace SniperStrategyGame.Tutorial
             StartTutorial();
         }
 
-        private void RaiseTogglePlayerInputEventEvent(bool value)
+        private void RaiseTogglePlayerInputEvent(bool value)
         {
             _eventBusServiceObj.Publish(new TogglePlayerInputEvent(value));
         }
 
-        private void RaiseToggleCursorEventEvent(bool value)
+        private void RaiseToggleCursorEvent(bool value)
         {
             _eventBusServiceObj.Publish(new ToggleCursorEvent(value));
         }
@@ -659,7 +659,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
         }
 
-        private void RaiseTutorialPauseEventEvent()
+        private void RaiseTutorialPauseEvent()
         {
             _eventBusServiceObj.Publish(new TutorialPauseEvent());
         }
