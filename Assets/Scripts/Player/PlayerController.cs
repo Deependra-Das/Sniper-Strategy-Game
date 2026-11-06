@@ -384,10 +384,14 @@ namespace SniperStrategyGame.Player
 
             Vector3 newPosition = new Vector3( enemyPosition.x, groundPosition.y + groundOffset, enemyPosition.z);
 
-            _rigidbody.position = newPosition;
+            Vector3 positionDelta = newPosition - _rigidbody.position;
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
+
+            _rigidbody.position = newPosition;
             Physics.SyncTransforms();
+
+            _playerCamera.OnTargetObjectWarped(_cameraPivot, positionDelta);
 
             return true;
         }
@@ -464,18 +468,20 @@ namespace SniperStrategyGame.Player
 
             float groundOffset = GetGroundOffset();
             Vector3 newPosition = new Vector3(_initialPosition.x, groundPosition.y + groundOffset, _initialPosition.z);
+            Vector3 positionDelta = newPosition - _rigidbody.position;
 
             if (_rigidbody != null)
-            { 
-                _rigidbody.position = newPosition;
-                _rigidbody.rotation = _initialRotation;
+            {
                 _rigidbody.linearVelocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
+                _rigidbody.position = newPosition;
+                _rigidbody.rotation = _initialRotation;     
             }
 
             transform.rotation = _initialRotation;
             _cameraPivot.localRotation = _initialCameraPivotRotation;
             Physics.SyncTransforms();
+            _playerCamera.OnTargetObjectWarped(_cameraPivot, positionDelta);
 
             _yaw = _initialRotation.eulerAngles.y;
             _pitch = _initialCameraPivotRotation.eulerAngles.x;
