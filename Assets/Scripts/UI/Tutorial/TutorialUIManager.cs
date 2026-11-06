@@ -94,6 +94,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
             _eventBusServiceObj.Subscribe<TutorialPauseEvent>(OnTutorialPauseUI);
             _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
+            _eventBusServiceObj.Subscribe<TutorialRestartEvent>(OnTutorialRestartUI);
         }
 
         private void UnsubscribeToEvents()
@@ -114,6 +115,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
             _eventBusServiceObj.Unsubscribe<TutorialPauseEvent>(OnTutorialPauseUI);
             _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
+            _eventBusServiceObj.Unsubscribe<TutorialRestartEvent>(OnTutorialRestartUI);
         }
 
         private void OnContinueTutorialNotificationButtonClicked()
@@ -125,6 +127,7 @@ namespace SniperStrategyGame.UI
         private void OnRestartTutorialNotificationButtonClicked()
         {
             ToggleTutorialNotificationContainer(false);
+            RaiseTutorialRestartEvent();
         }
         
         private void OnExitTutorialNotificationButtonClicked()
@@ -342,13 +345,13 @@ namespace SniperStrategyGame.UI
             }
 
             _wasTutorialNotificationActiveBeforePause = false;
-            RaiseTutorialResumeEventEvent();
+            RaiseTutorialResumeEvent();
         }
 
         private void OnRestartTutorialPauseMenuButtonClicked()
         {
             ToggleTutorialPauseMenuContainer(false);
-            _eventBusServiceObj.Publish(new TutorialRestartEvent());
+            RaiseTutorialRestartEvent();
         }
 
         private void OnExitTutorialPauseMenuButtonClicked()
@@ -366,9 +369,31 @@ namespace SniperStrategyGame.UI
             _pauseTutorialButton.gameObject.SetActive(value);
         }
 
-        private void RaiseTutorialResumeEventEvent()
+        private void OnTutorialRestartUI(TutorialRestartEvent eventObj)
+        {
+            StopAllCoroutines();
+
+            ToggleTutorialOverlay(false);
+            ToggleTutorialInstructionContainer(false);
+            ToggleTutorialNotificationContainer(false);
+            ToggleTutorialPauseMenuContainer(false);
+
+            _tutorialInstructionBackground.gameObject.SetActive(false);
+
+            _tutorialInstructionText.color = _originalTextColor;
+            _tutInstructionBGMaterial.SetFloat(ProgressID, 0f);
+
+            _wasTutorialNotificationActiveBeforePause = false;
+        }
+
+        private void RaiseTutorialResumeEvent()
         {
             _eventBusServiceObj.Publish(new TutorialResumeEvent());
+        }
+
+        private void RaiseTutorialRestartEvent()
+        {
+            _eventBusServiceObj.Publish(new TutorialRestartEvent());
         }
 
         private void OnDestroy()

@@ -60,6 +60,7 @@ namespace SniperStrategyGame.Player
         private int playerGunLayerMask;
         private Vector3 _initialPosition;
         private Quaternion _initialRotation;
+        private Quaternion _initialCameraPivotRotation;
 
         private EventBusService _eventBusServiceObj;
         private BulletService _bulletServiceObj;
@@ -102,6 +103,7 @@ namespace SniperStrategyGame.Player
         {
             _initialPosition = transform.position;
             _initialRotation = transform.rotation;
+            _initialCameraPivotRotation = _cameraPivot.localRotation;
 
             _rigidbody = GetComponent<Rigidbody>();
             _capsuleCollider = GetComponent<CapsuleCollider>();
@@ -452,6 +454,9 @@ namespace SniperStrategyGame.Player
 
         private void ResetPlayer()
         {
+            StopAllCoroutines();
+            _scopeCoroutine = null;
+
             if (!TryGetGroundPosition(_initialPosition, out Vector3 groundPosition))
             {
                 Debug.LogWarning($"Could not find ground below enemy at {_initialPosition}");
@@ -463,10 +468,36 @@ namespace SniperStrategyGame.Player
             if (_rigidbody != null)
             { 
                 _rigidbody.position = newPosition;
+                _rigidbody.rotation = _initialRotation;
                 _rigidbody.linearVelocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
-                Physics.SyncTransforms();
             }
+
+            transform.rotation = _initialRotation;
+            _cameraPivot.localRotation = _initialCameraPivotRotation;
+            Physics.SyncTransforms();
+
+            _yaw = _initialRotation.eulerAngles.y;
+            _pitch = _initialCameraPivotRotation.eulerAngles.x;
+
+            if (_pitch > 180f)
+                _pitch -= 360f;
+
+            _isScoped = false;
+            _canShoot = false;
+            _canLook = true;
+            _canTeleport = false;
+
+            _playerGunAnimator.SetBool("isScoped", false);
+            _playerCamera.Lens.FieldOfView = _normalFOV;
+            _playerCamera.Priority = 20;
+            _bulletCamera.Priority = 5;
+
+            _bulletCamera.Follow = _bulletSpawnPoint;
+            _bulletCamera.LookAt = _bulletSpawnPoint;
+
+            SetBulletCameraTarget();
+            RestoreRenderingGun();
         }
 
         private void RaisePlayerShotEvent() 

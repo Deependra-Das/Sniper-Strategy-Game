@@ -566,9 +566,9 @@ namespace SniperStrategyGame.Tutorial
 
             Time.timeScale = 1f;
             _isPaused = false;
-            EnableCursor();
+            RaiseTogglePauseButtonVisibilityEvent(false);
 
-            foreach (BaseEnemy enemy in _currentStepEnemies)
+            foreach (BaseEnemy enemy in _allSpawnedEnemies)
             {
                 if (enemy != null)
                 {
@@ -579,8 +579,7 @@ namespace SniperStrategyGame.Tutorial
             _allSpawnedEnemies.Clear();
             _currentStepEnemies.Clear();
 
-            _eventBusServiceObj.Publish(new ResetPlayerEvent());
-            _currentTutorialGroupIndex = 0;
+             _currentTutorialGroupIndex = 0;
             _currentTutorialStepIndex = 0;
 
             _isTransitioning = false;
@@ -589,6 +588,7 @@ namespace SniperStrategyGame.Tutorial
             _canPauseTutorial = false;
             _isTutorialStarted = false;
 
+            RaiseResetPlayerEvent();
             Debug.Log("Tutorial Cleaned Up");
         }
 
@@ -601,12 +601,6 @@ namespace SniperStrategyGame.Tutorial
         {
             CleanUpTutorial();
             _isCleanedUp = false;
-            _currentTutorialGroupIndex = 0;
-            _currentTutorialStepIndex = 0;
-
-            _isTransitioning = false;
-            _isPaused = false;
-            _isTutorialStarted = false;
             StartTutorial();
         }
 
@@ -673,6 +667,11 @@ namespace SniperStrategyGame.Tutorial
         private void RaiseTogglePauseButtonVisibilityEvent(bool value)
         {
             _eventBusServiceObj.Publish(new TogglePauseButtonVisibilityEvent(value));
+        }
+
+        private void RaiseResetPlayerEvent()
+        {
+            _eventBusServiceObj.Publish(new ResetPlayerEvent());
         }
 
         private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
