@@ -2,6 +2,7 @@ using SniperStrategyGame.Enemy;
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Path;
+using SniperStrategyGame.SceneLoader;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,7 +28,7 @@ namespace SniperStrategyGame.Tutorial
 
         private EventBusService _eventBusServiceObj;
         private EnemyService _enemyServiceObj;
-
+        private SceneLoaderService _sceneLoaderObj;
         private InputActionMap _uiActionMap;
         private InputAction _pauseAction;
 
@@ -42,9 +43,9 @@ namespace SniperStrategyGame.Tutorial
         private void Awake()
         {
             var services = GameManager.Instance.Services;
-
             _eventBusServiceObj = services.Get<EventBusService>();
             _enemyServiceObj = services.Get<EnemyService>();
+            _sceneLoaderObj = services.Get<SceneLoaderService>();
 
             _uiActionMap = _inputActionObj.FindActionMap("UI");
             _pauseAction = _uiActionMap.FindAction("Cancel");       
@@ -81,6 +82,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
             _eventBusServiceObj.Subscribe<TutorialResumeEvent>(OnResumeTutorial);
             _eventBusServiceObj.Subscribe<TutorialRestartEvent>(OnRestartTutorial);
+            _eventBusServiceObj.Subscribe<TutorialExitEvent>(OnExitTutorial);
             _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -93,6 +95,7 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Unsubscribe<ContinueTutorialEvent>(OnContinueTutorial);
             _eventBusServiceObj.Unsubscribe<TutorialResumeEvent>(OnResumeTutorial);
             _eventBusServiceObj.Unsubscribe<TutorialRestartEvent>(OnRestartTutorial);
+            _eventBusServiceObj.Unsubscribe<TutorialExitEvent>(OnExitTutorial);
             _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -602,6 +605,18 @@ namespace SniperStrategyGame.Tutorial
             CleanUpTutorial();
             _isCleanedUp = false;
             StartTutorial();
+        }
+
+        private void OnExitTutorial(TutorialExitEvent eventObj)
+        {
+            ExitTutorial();
+        }
+
+        private void ExitTutorial()
+        {
+            CleanUpTutorial();
+            _isCleanedUp = false;
+            _sceneLoaderObj.LoadScene(SceneNameEnum.StageSelection);
         }
 
         private void RaiseTogglePlayerInputEvent(bool value)
