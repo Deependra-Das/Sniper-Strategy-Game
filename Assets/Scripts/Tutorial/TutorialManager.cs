@@ -40,6 +40,10 @@ namespace SniperStrategyGame.Tutorial
         private bool _playerInputBeforePause;
         private bool _canPauseTutorial;
 
+        public bool IsPaused => _isPaused;
+
+        public bool CanPause => _canPauseTutorial && !_isPaused && !_isTransitioning && !_isCleanedUp;
+
         private void Awake()
         {
             var services = GameManager.Instance.Services;
@@ -79,10 +83,11 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Subscribe<PlayerScopeInEvent>(OnScopeIn);
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnScopeOut);
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
-            _eventBusServiceObj.Subscribe<ContinueTutorialEvent>(OnContinueTutorial);
-            _eventBusServiceObj.Subscribe<TutorialResumeEvent>(OnResumeTutorial);
-            _eventBusServiceObj.Subscribe<TutorialRestartEvent>(OnRestartTutorial);
-            _eventBusServiceObj.Subscribe<TutorialExitEvent>(OnExitTutorial);
+            _eventBusServiceObj.Subscribe<RequestContinueToNextTutorialEvent>(OnContinueTutorial);
+            _eventBusServiceObj.Subscribe<RequestPauseGameplayEvent>(OnPauseTutorialRequested);
+            _eventBusServiceObj.Subscribe<RequestResumeGameplayEvent>(OnResumeTutorialRequested);
+            _eventBusServiceObj.Subscribe<RequestRestartGameplayEvent>(OnRestartTutorialRequested);
+            _eventBusServiceObj.Subscribe<RequestExitGameplayEvent>(OnExitTutorialRequested);
             _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -92,10 +97,11 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Unsubscribe<PlayerScopeInEvent>(OnScopeIn);
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemy);
-            _eventBusServiceObj.Unsubscribe<ContinueTutorialEvent>(OnContinueTutorial);
-            _eventBusServiceObj.Unsubscribe<TutorialResumeEvent>(OnResumeTutorial);
-            _eventBusServiceObj.Unsubscribe<TutorialRestartEvent>(OnRestartTutorial);
-            _eventBusServiceObj.Unsubscribe<TutorialExitEvent>(OnExitTutorial);
+            _eventBusServiceObj.Unsubscribe<RequestContinueToNextTutorialEvent>(OnContinueTutorial);
+            _eventBusServiceObj.Unsubscribe<RequestPauseGameplayEvent>(OnPauseTutorialRequested);
+            _eventBusServiceObj.Unsubscribe<RequestResumeGameplayEvent>(OnResumeTutorialRequested);
+            _eventBusServiceObj.Unsubscribe<RequestRestartGameplayEvent>(OnRestartTutorialRequested);
+            _eventBusServiceObj.Unsubscribe<RequestExitGameplayEvent>(OnExitTutorialRequested);
             _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
         }
 
@@ -345,9 +351,10 @@ namespace SniperStrategyGame.Tutorial
             return _tutorialSequenceSO.tutorialGroupsList[index];
         }
 
-        private void OnContinueTutorial(ContinueTutorialEvent eventObj)
+        private void OnContinueTutorial(RequestContinueToNextTutorialEvent eventObj)
         {
             DisableCursor();
+            RaiseTutorialContinuedEvent();
             AdvanceToNextTutorialGroup();
         }
 
@@ -520,33 +527,51 @@ namespace SniperStrategyGame.Tutorial
 
         private void TogglePause(InputAction.CallbackContext context)
         {
+            if (!CanPause) return;
+
             PauseTutorial();
+        }
+
+        private void OnPauseTutorialRequested(RequestPauseGameplayEvent eventObj)
+        {
+            if (!CanPause) return;
+
+            PauseTutorial();
+        }
+
+        private void OnResumeTutorialRequested(RequestResumeGameplayEvent eventObj)
+        {
+            if (!IsPaused || _isCleanedUp) return;
+
+            ResumeTutorial();
+        }
+
+        private void OnRestartTutorialRequested(RequestRestartGameplayEvent eventObj)
+        {
+            if (_isCleanedUp) return;
+
+            RestartTutorial();
+        }
+
+        private void OnExitTutorialRequested(RequestExitGameplayEvent eventObj)
+        {
+            if (_isCleanedUp) return;
+
+            ExitTutorial();
         }
 
         private void PauseTutorial()
         {
-            if (_isPaused || !_canPauseTutorial || _isTransitioning || _isCleanedUp)
-                return;
-
             _playerInputBeforePause = _isPlayerInputEnabled;
-
             _isPaused = true;
             DisablePlayerInput();
             EnableCursor();
-            RaiseTutorialPauseEvent();
             Time.timeScale = 0f;
-        }
-
-        private void OnResumeTutorial(TutorialResumeEvent eventObj)
-        {
-            ResumeTutorial();
+            RaiseGameplayPausedEvent();
         }
 
         private void ResumeTutorial()
         {
-            if (!_isPaused || _isCleanedUp)
-                return;
-
             if (_playerInputBeforePause)
             {
                 EnablePlayerInput();
@@ -556,13 +581,11 @@ namespace SniperStrategyGame.Tutorial
             Time.timeScale = 1f;
             DisableCursor();
             RaiseTogglePlayerInputEvent(_playerInputBeforePause);
+            RaiseGameplayResumedEvent();
         }
 
         private void CleanUpTutorial()
         {
-            if (_isCleanedUp)
-                return;
-
             _isCleanedUp = true;
 
             StopAllCoroutines();
@@ -595,25 +618,17 @@ namespace SniperStrategyGame.Tutorial
             Debug.Log("Tutorial Cleaned Up");
         }
 
-        private void OnRestartTutorial(TutorialRestartEvent eventObj)
-        {
-            RestartTutorial();
-        }
-
         private void RestartTutorial()
         {
+            RaiseGameplayRestartedEvent();
             CleanUpTutorial();
             _isCleanedUp = false;
             StartTutorial();
         }
 
-        private void OnExitTutorial(TutorialExitEvent eventObj)
-        {
-            ExitTutorial();
-        }
-
         private void ExitTutorial()
         {
+            RaiseGameplayExitedEvent();
             CleanUpTutorial();
             _isCleanedUp = false;
             _sceneLoaderObj.LoadScene(SceneNameEnum.StageSelection);
@@ -674,9 +689,24 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Publish(new ActivatePlayerTeleportAbilityEvent());
         }
 
-        private void RaiseTutorialPauseEvent()
+        private void RaiseGameplayPausedEvent()
         {
-            _eventBusServiceObj.Publish(new TutorialPauseEvent());
+            _eventBusServiceObj.Publish(new GameplayPausedEvent());
+        }
+
+        private void RaiseGameplayResumedEvent()
+        {
+            _eventBusServiceObj.Publish(new GameplayResumedEvent());
+        }
+
+        private void RaiseGameplayRestartedEvent()
+        {
+            _eventBusServiceObj.Publish(new GameplayRestartedEvent());
+        }
+
+        private void RaiseGameplayExitedEvent()
+        {
+            _eventBusServiceObj.Publish(new GameplayExitedEvent());
         }
 
         private void RaiseTogglePauseButtonVisibilityEvent(bool value)
@@ -689,15 +719,14 @@ namespace SniperStrategyGame.Tutorial
             _eventBusServiceObj.Publish(new ResetPlayerEvent());
         }
 
+        private void RaiseTutorialContinuedEvent()
+        {
+            _eventBusServiceObj.Publish(new TutorialContinuedEvent());
+        }        
+
         private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
         {
             _canPauseTutorial = eventObj.IsVisible;
         }
-
-        private void OnDestroy()
-        {
-            _pauseAction.Dispose();
-        }
-
     }
 }
