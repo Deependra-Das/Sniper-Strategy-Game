@@ -1,6 +1,5 @@
 using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
-using SniperStrategyGame.SceneLoader;
 using SniperStrategyGame.Tutorial;
 using System.Collections;
 using TMPro;
@@ -33,13 +32,6 @@ namespace SniperStrategyGame.UI
         [SerializeField] private Button _restartTutorialNotification_Button;
         [SerializeField] private Button _exitTutorialNotification_Button;
 
-        [Header("Tutorial Pause Menu")]
-        [SerializeField] private GameObject _tutorialPauseMenuContainer;
-        [SerializeField] private Button _pauseTutorialButton;
-        [SerializeField] private Button _resumeTutorialPauseMenu_Button;
-        [SerializeField] private Button _restartTutorialPauseMenu_Button;
-        [SerializeField] private Button _exitTutorialPauseMenu_Button;
-
         [SerializeField] private float _revealDuration = 0.5f;
         [SerializeField] private float _dissolveDuration = 0.25f;
 
@@ -54,6 +46,8 @@ namespace SniperStrategyGame.UI
         private static readonly int ProgressID = Shader.PropertyToID("_Progress");
 
         private bool _wasTutorialNotificationActiveBeforePause;
+        private bool _wasTutorialInstructionActiveBeforePause;
+        private bool _wasTutorialOverlayActiveBeforePause;
 
         private void Awake()
         {
@@ -82,19 +76,15 @@ namespace SniperStrategyGame.UI
             _restartTutorialNotification_Button.onClick.AddListener(OnRestartTutorialNotificationButtonClicked);
             _exitTutorialNotification_Button.onClick.AddListener(OnExitTutorialNotificationButtonClicked);
 
-            _pauseTutorialButton.onClick.AddListener(OnPauseTutorialButtonClicked);
-            _resumeTutorialPauseMenu_Button.onClick.AddListener(OnResumeTutorialPauseMenuButtonClicked);
-            _restartTutorialPauseMenu_Button.onClick.AddListener(OnRestartTutorialPauseMenuButtonClicked);
-            _exitTutorialPauseMenu_Button.onClick.AddListener(OnExitTutorialPauseMenuButtonClicked);
-
             _eventBusServiceObj.Subscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Subscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
-            _eventBusServiceObj.Subscribe<TutorialPauseEvent>(OnTutorialPauseUI);
-            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
-            _eventBusServiceObj.Subscribe<TutorialRestartEvent>(OnTutorialRestartUI);
+            _eventBusServiceObj.Subscribe<GameplayPausedEvent>(OnGameplayPaused_TutorialUI);
+            _eventBusServiceObj.Subscribe<GameplayResumedEvent>(OnGameplayResumed_TutorialUI);
+            _eventBusServiceObj.Subscribe<GameplayRestartedEvent>(OnGameplayRestarted_TutorialUI);
+            _eventBusServiceObj.Subscribe<TutorialContinuedEvent>(OnTutorialContinued_TutorialUI);
         }
 
         private void UnsubscribeToEvents()
@@ -103,37 +93,30 @@ namespace SniperStrategyGame.UI
             _restartTutorialNotification_Button.onClick.RemoveListener(OnRestartTutorialNotificationButtonClicked);
             _exitTutorialNotification_Button.onClick.RemoveListener(OnExitTutorialNotificationButtonClicked);
 
-            _pauseTutorialButton.onClick.RemoveListener(OnPauseTutorialButtonClicked);
-            _resumeTutorialPauseMenu_Button.onClick.RemoveListener(OnResumeTutorialPauseMenuButtonClicked);
-            _restartTutorialPauseMenu_Button.onClick.RemoveListener(OnRestartTutorialPauseMenuButtonClicked);
-            _exitTutorialPauseMenu_Button.onClick.RemoveListener(OnExitTutorialPauseMenuButtonClicked);
-
             _eventBusServiceObj.Unsubscribe<TutorialStepStartedEvent>(OnTutorialStepStarted);
             _eventBusServiceObj.Unsubscribe<TutorialStepCompletedEvent>(OnTutorialStepCompleted);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompleted);
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompleted);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShotTutorialUI);
-            _eventBusServiceObj.Unsubscribe<TutorialPauseEvent>(OnTutorialPauseUI);
-            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityTutorialUI);
-            _eventBusServiceObj.Unsubscribe<TutorialRestartEvent>(OnTutorialRestartUI);
+            _eventBusServiceObj.Unsubscribe<GameplayPausedEvent>(OnGameplayPaused_TutorialUI);
+            _eventBusServiceObj.Unsubscribe<GameplayResumedEvent>(OnGameplayResumed_TutorialUI);
+            _eventBusServiceObj.Unsubscribe<GameplayRestartedEvent>(OnGameplayRestarted_TutorialUI);
+            _eventBusServiceObj.Unsubscribe<TutorialContinuedEvent>(OnTutorialContinued_TutorialUI);
         }
 
         private void OnContinueTutorialNotificationButtonClicked()
         {
-            ToggleTutorialNotificationContainer(false);
-            _eventBusServiceObj.Publish(new ContinueTutorialEvent());
+            _eventBusServiceObj.Publish(new RequestContinueToNextTutorialEvent());
         }
 
         private void OnRestartTutorialNotificationButtonClicked()
         {
-            ToggleTutorialNotificationContainer(false);
-            RaiseTutorialRestartEvent();
+            RaiseRequestRestartGameplayEvent();
         }
         
         private void OnExitTutorialNotificationButtonClicked()
         {
-            ToggleTutorialNotificationContainer(false);
-            RaiseTutorialExitEvent();
+            RaiseRequestExitGameplayEvent();
         }
 
         private void OnTutorialGroupCompleted(TutorialGroupCompletedEvent eventObj)
@@ -317,90 +300,58 @@ namespace SniperStrategyGame.UI
             ToggleTutorialOverlay(false);
         }
 
-        private void OnTutorialPauseUI(TutorialPauseEvent eventObj)
+        private void OnGameplayPaused_TutorialUI(GameplayPausedEvent eventObj)
         {
+            _wasTutorialOverlayActiveBeforePause = _tutorialOverlayImage.gameObject.activeSelf;
+            _wasTutorialInstructionActiveBeforePause = _tutorialInstructionContainer.gameObject.activeSelf;
             _wasTutorialNotificationActiveBeforePause = _tutorialNotificationContainer.activeSelf;
 
-            if (_wasTutorialNotificationActiveBeforePause)
-            {
-                ToggleTutorialNotificationContainer(false);
-            }
-
-            ToggleTutorialPauseMenuContainer(true);
+            ToggleTutorialOverlay(false);
+            ToggleTutorialInstructionContainer(false);
+            ToggleTutorialNotificationContainer(false);
         }
 
-        private void ToggleTutorialPauseMenuContainer(bool value)
+        private void OnGameplayResumed_TutorialUI(GameplayResumedEvent eventObj)
         {
-            _tutorialPauseMenuContainer.gameObject.SetActive(value);
-        }
+            ToggleTutorialOverlay(_wasTutorialOverlayActiveBeforePause);
+            ToggleTutorialInstructionContainer(_wasTutorialInstructionActiveBeforePause);
+            ToggleTutorialNotificationContainer(_wasTutorialNotificationActiveBeforePause);
 
-        private void OnPauseTutorialButtonClicked() { }
-
-        private void OnResumeTutorialPauseMenuButtonClicked()
-        {
-            ToggleTutorialPauseMenuContainer(false);
-
-            if (_wasTutorialNotificationActiveBeforePause)
-            {
-                ToggleTutorialNotificationContainer(true);
-            }
-
+            _wasTutorialOverlayActiveBeforePause = false;
+            _wasTutorialInstructionActiveBeforePause = false;
             _wasTutorialNotificationActiveBeforePause = false;
-            RaiseTutorialResumeEvent();
         }
 
-        private void OnRestartTutorialPauseMenuButtonClicked()
-        {
-            ToggleTutorialPauseMenuContainer(false);
-            RaiseTutorialRestartEvent();
-        }
-
-        private void OnExitTutorialPauseMenuButtonClicked()
-        {
-            ToggleTutorialPauseMenuContainer(false);
-            RaiseTutorialExitEvent();
-        }
-
-        private void OnTogglePauseButtonVisibilityTutorialUI(TogglePauseButtonVisibilityEvent eventObj)
-        {
-            TogglePauseTutorialButtonVisibility(eventObj.IsVisible);
-        }
-
-        private void TogglePauseTutorialButtonVisibility(bool value)
-        {
-            _pauseTutorialButton.gameObject.SetActive(value);
-        }
-
-        private void OnTutorialRestartUI(TutorialRestartEvent eventObj)
+        private void OnGameplayRestarted_TutorialUI(GameplayRestartedEvent eventObj)
         {
             StopAllCoroutines();
 
             ToggleTutorialOverlay(false);
             ToggleTutorialInstructionContainer(false);
             ToggleTutorialNotificationContainer(false);
-            ToggleTutorialPauseMenuContainer(false);
 
             _tutorialInstructionBackground.gameObject.SetActive(false);
 
             _tutorialInstructionText.color = _originalTextColor;
             _tutInstructionBGMaterial.SetFloat(ProgressID, 0f);
 
+            _wasTutorialOverlayActiveBeforePause = false;
             _wasTutorialNotificationActiveBeforePause = false;
         }
 
-        private void RaiseTutorialResumeEvent()
+        private void OnTutorialContinued_TutorialUI(TutorialContinuedEvent eventbj)
         {
-            _eventBusServiceObj.Publish(new TutorialResumeEvent());
+            ToggleTutorialNotificationContainer(false);
         }
 
-        private void RaiseTutorialRestartEvent()
+        private void RaiseRequestRestartGameplayEvent()
         {
-            _eventBusServiceObj.Publish(new TutorialRestartEvent());
+            _eventBusServiceObj.Publish(new RequestRestartGameplayEvent());
         }
 
-        private void RaiseTutorialExitEvent()
+        private void RaiseRequestExitGameplayEvent()
         {
-            _eventBusServiceObj.Publish(new TutorialExitEvent());
+            _eventBusServiceObj.Publish(new RequestExitGameplayEvent());
         }
 
         private void OnDestroy()
