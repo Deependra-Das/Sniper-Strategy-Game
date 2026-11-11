@@ -42,6 +42,18 @@ namespace SniperStrategyGame.Enemy
         public void Initialize()
         {
             eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
+
+            if (agent == null)
+            {
+                Debug.LogError($"NavMeshAgent missing on {name}");
+                return;
+            }
+            if (!agent.isOnNavMesh)
+            {
+                Debug.LogError($"Enemy {name} is not placed on NavMesh");
+                return;
+            }
+
             SubscribeToEvents();
             SetActive(false);
         }
@@ -76,8 +88,14 @@ namespace SniperStrategyGame.Enemy
         {
             _isActive = isActive;
 
-            agent.isStopped = !isActive;
-            animator.speed = isActive ? 1f : 0f;
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = !isActive;
+            }
+            if (animator != null)
+            {
+                animator.speed = isActive ? 1f : 0f;
+            }
         }
 
         private void OnPlayerBulletFired(PlayerBulletFiredEvent eventObj)
@@ -92,14 +110,28 @@ namespace SniperStrategyGame.Enemy
 
         private void Freeze()
         {
-            agent.isStopped = true;
-            animator.speed = 0f;
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+            }
+
+            if (animator != null)
+            {
+                animator.speed = 0f;
+            }
         }
 
         private void UnFreeze()
         {
-            agent.isStopped = false;
-            animator.speed = 1f;
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
+
+            if (animator != null)
+            {
+                animator.speed = 1f;
+            }
         }
 
         protected abstract void ExecuteBehaviour();
