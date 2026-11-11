@@ -1,20 +1,24 @@
+using SniperStrategyGame.Event;
+using SniperStrategyGame.Gameplay;
+using SniperStrategyGame.Main;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using SniperStrategyGame.Event;
-using SniperStrategyGame.Main;
 
 namespace SniperStrategyGame.UI
 {
     public class GameplayUIManager : MonoBehaviour
     {
+        [Header("Gameplay Buttons")]
         [SerializeField] private GameObject _scopeOverlay;
         [SerializeField] private Button _shootButton;
         [SerializeField] private Button _scopeInButton;
         [SerializeField] private Button _scopeOutButton;
         [SerializeField] private GameObject _scopeInButtonContainer;
         [SerializeField] private GameObject _scopeOutButtonContainer;
+
+        [Header("Mission Info Name & Goal")]
         [SerializeField] private GameObject _missionInfoContainer;
         [SerializeField] private Image _missionNameBackground;
         [SerializeField] private TMP_Text _missionNameText;
@@ -27,6 +31,14 @@ namespace SniperStrategyGame.UI
         [SerializeField] private CanvasGroup _missionGoalContainerCanvasGroup;
         [SerializeField] private Vector2 _missionGoalContainerStartPosition;
         [SerializeField] private Vector2 _missionGoalContainerEndPosition;
+
+        [Header("Gameplay Pause Menu")]
+        [SerializeField] private GameObject _pauseMenuContainer;
+        [SerializeField] private Button _pauseButton;
+        [SerializeField] private Button _resumeButton_PauseMenu;
+        [SerializeField] private Button _restartButton_PauseMenu;
+        [SerializeField] private Button _exitButton_PauseMenu;
+
         [SerializeField] private float _slideAnimationDuration;
         [SerializeField] private float _revealDuration = 1f;
         [SerializeField] private float _dissolveDuration = 0.5f;
@@ -48,28 +60,49 @@ namespace SniperStrategyGame.UI
 
         private void SubscribeToEvents()
         {
+            _pauseButton.onClick.AddListener(OnPauseButtonClicked);
+            _resumeButton_PauseMenu.onClick.AddListener(OnResumeButtonClicked);
+            _restartButton_PauseMenu.onClick.AddListener(OnRestartButtonClicked);
+            _exitButton_PauseMenu.onClick.AddListener(OnExitButtonClicked);
+
             _eventBusServiceObj.Subscribe<PlayerScopeInEvent>(OnPlayerScopeIn);
             _eventBusServiceObj.Subscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Subscribe<PlayerShotEvent>(OnPlayerShot);
             _eventBusServiceObj.Subscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
+            _eventBusServiceObj.Subscribe<GameplayPausedEvent>(OnGameplayPaused_GameplayUI);
+            _eventBusServiceObj.Subscribe<GameplayResumedEvent>(OnGameplayResumed_GameplayUI);
+            _eventBusServiceObj.Subscribe<GameplayRestartedEvent>(OnGameplayRestarted_GameplayUI);
+            _eventBusServiceObj.Subscribe<GameplayExitedEvent>(OnGameplayExited_GameplayUI);
         }
 
         private void UnsubscribeToEvents()
         {
+            _pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
+            _resumeButton_PauseMenu.onClick.RemoveListener(OnResumeButtonClicked);
+            _restartButton_PauseMenu.onClick.RemoveListener(OnRestartButtonClicked);
+            _exitButton_PauseMenu.onClick.RemoveListener(OnExitButtonClicked);
+
             _eventBusServiceObj.Unsubscribe<PlayerScopeInEvent>(OnPlayerScopeIn);
             _eventBusServiceObj.Unsubscribe<PlayerScopeOutEvent>(OnPlayerScopeOut);
             _eventBusServiceObj.Unsubscribe<PlayerShotEvent>(OnPlayerShot);
             _eventBusServiceObj.Unsubscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
+            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
+            _eventBusServiceObj.Unsubscribe<GameplayPausedEvent>(OnGameplayPaused_GameplayUI);
+            _eventBusServiceObj.Unsubscribe<GameplayResumedEvent>(OnGameplayResumed_GameplayUI);
+            _eventBusServiceObj.Unsubscribe<GameplayRestartedEvent>(OnGameplayRestarted_GameplayUI);
+            _eventBusServiceObj.Unsubscribe<GameplayExitedEvent>(OnGameplayExited_GameplayUI);
         }
 
         private void Start()
         {
             ToggleMissionNameContainer(false);
             ToggleMissionGoalContainer(false);
+            TogglePauseMenuContainer(false);
             ShowScopeIn();
         }
 
@@ -256,6 +289,76 @@ namespace SniperStrategyGame.UI
             Color color = _missionNameTextOriginalColor;
             color.a *= alpha;
             _missionNameText.color = color;
+        }
+
+        public void OnPauseButtonClicked()
+        {
+            RaiseRequestPauseGameplayEvent();
+        }
+
+        public void OnResumeButtonClicked()
+        {
+            RaiseRequestResumeGameplayEvent();
+        }
+
+        public void OnRestartButtonClicked()
+        {
+            RaiseRequestRestartGameplayEvent();
+        }
+
+        public void OnExitButtonClicked()
+        {
+            RaiseRequestExitGameplayEvent();
+        }
+
+        private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
+        {
+            _pauseButton.gameObject.SetActive(eventObj.IsVisible);
+        }
+
+        private void OnGameplayPaused_GameplayUI(GameplayPausedEvent eventObj)
+        {
+            TogglePauseMenuContainer(true);
+        }
+
+        private void OnGameplayResumed_GameplayUI(GameplayResumedEvent eventObj)
+        {
+            TogglePauseMenuContainer(false);
+        }
+
+        private void OnGameplayRestarted_GameplayUI(GameplayRestartedEvent eventObj)
+        {
+            TogglePauseMenuContainer(false);
+        }
+
+        private void OnGameplayExited_GameplayUI(GameplayExitedEvent eventObj)
+        {
+            TogglePauseMenuContainer(false);
+        }
+
+        private void TogglePauseMenuContainer(bool value)
+        {
+            _pauseMenuContainer.gameObject.SetActive(value);
+        }
+
+        private void RaiseRequestPauseGameplayEvent()
+        {
+            _eventBusServiceObj.Publish(new RequestPauseGameplayEvent());
+        }
+
+        private void RaiseRequestResumeGameplayEvent()
+        {
+            _eventBusServiceObj.Publish(new RequestResumeGameplayEvent());
+        }
+
+        private void RaiseRequestRestartGameplayEvent()
+        {
+            _eventBusServiceObj.Publish(new RequestRestartGameplayEvent());
+        }
+
+        private void RaiseRequestExitGameplayEvent()
+        {
+            _eventBusServiceObj.Publish(new RequestExitGameplayEvent());
         }
 
         private void OnDestroy()
