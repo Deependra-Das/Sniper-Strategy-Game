@@ -11146,6 +11146,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SniperStrategyGame.Gameplay.GameplayManager
   _inputActionObj: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  _missionGoalData_SO: {fileID: 11400000, guid: 29b1132cba56b4244869a52fae74ea47, type: 2}
   _guardSpawnPointList:
   - {fileID: 926976914}
   - {fileID: 504034889}

@@ -3,6 +3,7 @@ using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Path;
 using SniperStrategyGame.SceneLoader;
+using SniperStrategyGame.Tutorial;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,6 +16,10 @@ namespace SniperStrategyGame.Gameplay
         [Header("Input")]
         [SerializeField] private InputActionAsset _inputActionObj;
 
+        [Header("Mission Goal Data")]
+        [SerializeField] private GameplayStageMissionGoal_SO _missionGoalData_SO;
+
+        [Header("Spawn Data")]
         [SerializeField] private List<Transform> _guardSpawnPointList;
         [SerializeField] private List<Transform> _patrolSpawnPointList;
         [SerializeField] private List<Transform> _shieldSpawnPointList;
@@ -95,6 +100,8 @@ namespace SniperStrategyGame.Gameplay
             _isStageCompleted = false;
 
             SpawnEnemies();
+
+            RaiseUpdateMissionInfoEvent(GetUpdatedMissionInfoText(), _missionGoalData_SO.missionGoalInfo);
             RaiseActivateEnemiesEvent();
             RaiseActivatePlayerTeleportAbilityEvent();
             EnablePlayerInput();
@@ -152,6 +159,28 @@ namespace SniperStrategyGame.Gameplay
             return _patrolPathList[index];
         }
 
+        private int GetTotalEnemiesAlive()
+        {
+            return _aliveEnemies.Count;
+        }
+
+        private int GetTotalEnemiesSpawned()
+        {
+            return _guardSpawnPointList.Count + _patrolSpawnPointList.Count + _shieldSpawnPointList.Count;
+        }
+
+        private int GetEnemiesDefeated()
+        {
+            return GetTotalEnemiesSpawned() - GetTotalEnemiesAlive();
+        }
+
+        private string GetUpdatedMissionInfoText()
+        {
+            int totalEnemiesSpawned = GetTotalEnemiesSpawned();
+            int enemiesDefeated = GetEnemiesDefeated();
+            return _missionGoalData_SO.missionName + " : " + enemiesDefeated.ToString() + " / " + totalEnemiesSpawned.ToString();
+        }
+
         private void OnEnemyDied(EnemyDiedEvent eventObj)
         {
             if (_isCleanedUp || _isStageCompleted)
@@ -164,6 +193,7 @@ namespace SniperStrategyGame.Gameplay
                 return;
 
             Destroy(eventObj.Enemy.gameObject);
+            RaiseUpdateMissionInfoEvent(GetUpdatedMissionInfoText(), _missionGoalData_SO.missionGoalInfo);
 
             if (_aliveEnemies.Count == 0)
             {
@@ -370,6 +400,11 @@ namespace SniperStrategyGame.Gameplay
         private void RaiseResetPlayerEvent()
         {
             _eventBusServiceObj.Publish(new ResetPlayerEvent());
+        }
+
+        private void RaiseUpdateMissionInfoEvent(string missionName, string missionGoal)
+        {
+            _eventBusServiceObj.Publish(new UpdateMissionInfoEvent(missionName, missionGoal));
         }
 
         private void OnDestroy()
