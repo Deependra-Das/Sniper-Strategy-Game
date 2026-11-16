@@ -71,7 +71,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Subscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
             _eventBusServiceObj.Subscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
             _eventBusServiceObj.Subscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
-            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityGameplayUI);
             _eventBusServiceObj.Subscribe<GameplayPausedEvent>(OnGameplayPaused_GameplayUI);
             _eventBusServiceObj.Subscribe<GameplayResumedEvent>(OnGameplayResumed_GameplayUI);
             _eventBusServiceObj.Subscribe<GameplayRestartedEvent>(OnGameplayRestarted_GameplayUI);
@@ -91,7 +91,7 @@ namespace SniperStrategyGame.UI
             _eventBusServiceObj.Unsubscribe<UpdateMissionInfoEvent>(OnUpdateMissionInfo);
             _eventBusServiceObj.Unsubscribe<TutorialGroupCompletedEvent>(OnTutorialGroupCompletedGameplayUI);
             _eventBusServiceObj.Unsubscribe<AllTutorialsCompletedEvent>(OnAllTutorialsCompletedGameplayUI);
-            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibility);
+            _eventBusServiceObj.Unsubscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityGameplayUI);
             _eventBusServiceObj.Unsubscribe<GameplayPausedEvent>(OnGameplayPaused_GameplayUI);
             _eventBusServiceObj.Unsubscribe<GameplayResumedEvent>(OnGameplayResumed_GameplayUI);
             _eventBusServiceObj.Unsubscribe<GameplayRestartedEvent>(OnGameplayRestarted_GameplayUI);
@@ -311,7 +311,7 @@ namespace SniperStrategyGame.UI
             RaiseRequestExitGameplayEvent();
         }
 
-        private void OnTogglePauseButtonVisibility(TogglePauseButtonVisibilityEvent eventObj)
+        private void OnTogglePauseButtonVisibilityGameplayUI(TogglePauseButtonVisibilityEvent eventObj)
         {
             _pauseButton.gameObject.SetActive(eventObj.IsVisible);
         }

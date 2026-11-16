@@ -40,10 +40,11 @@ namespace SniperStrategyGame.Gameplay
         private bool _isPlayerInputEnabled;
         private bool _playerInputBeforePause;
         private bool _isStageCompleted;
+        private bool _canPauseGameplay;
 
         public bool IsPaused => _isPaused;
 
-        public bool CanPause => !_isPaused && !_isCleanedUp && !_isStageCompleted;
+        public bool CanPause => _canPauseGameplay && !_isPaused && !_isCleanedUp && !_isStageCompleted;
 
         private void SubscribeToEvents()
         {
@@ -52,6 +53,7 @@ namespace SniperStrategyGame.Gameplay
             _eventBusServiceObj.Subscribe<RequestResumeGameplayEvent>(OnResumeGameplayRequested);
             _eventBusServiceObj.Subscribe<RequestRestartGameplayEvent>(OnRestartGameplayRequested);
             _eventBusServiceObj.Subscribe<RequestExitGameplayEvent>(OnExitGameplayRequested);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityGameplayStage);
         }
 
         private void UnsubscribeFromEvents()
@@ -61,6 +63,7 @@ namespace SniperStrategyGame.Gameplay
             _eventBusServiceObj.Unsubscribe<RequestResumeGameplayEvent>(OnResumeGameplayRequested);
             _eventBusServiceObj.Unsubscribe<RequestRestartGameplayEvent>(OnRestartGameplayRequested);
             _eventBusServiceObj.Unsubscribe<RequestExitGameplayEvent>(OnExitGameplayRequested);
+            _eventBusServiceObj.Subscribe<TogglePauseButtonVisibilityEvent>(OnTogglePauseButtonVisibilityGameplayStage);
         }
 
         private void Awake()
@@ -105,6 +108,7 @@ namespace SniperStrategyGame.Gameplay
             RaiseActivateEnemiesEvent();
             RaiseActivatePlayerTeleportAbilityEvent();
             EnablePlayerInput();
+            _canPauseGameplay = true;
             RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
@@ -309,7 +313,7 @@ namespace SniperStrategyGame.Gameplay
             _isStageCompleted = false;
             _isPlayerInputEnabled = false;
             _playerInputBeforePause = false;
-
+            _canPauseGameplay = false;
             RaiseResetPlayerEvent();
             RaiseTogglePauseButtonVisibilityEvent(false);
             EnableCursor();
@@ -345,6 +349,11 @@ namespace SniperStrategyGame.Gameplay
             CleanUpGameplay();
             _isCleanedUp = false;
             _sceneLoaderObj.LoadScene(SceneNameEnum.StageSelection);
+        }
+
+        private void OnTogglePauseButtonVisibilityGameplayStage(TogglePauseButtonVisibilityEvent eventObj)
+        {
+            _canPauseGameplay = eventObj.IsVisible;
         }
 
         private void RaiseEnemySpawnedEvent(BaseEnemy enemy)
