@@ -2236,7 +2236,7 @@ MonoBehaviour:
   _scopeInButtonContainer: {fileID: 6672592070093170997}
   _scopeOutButtonContainer: {fileID: 7200662199239270549}
   _missionInfoContainer: {fileID: 2136986090073588596}
-  _missionNameBackground: {fileID: 0}
+  _missionNameBackground: {fileID: 2136207140999538479}
   _missionNameText: {fileID: 4336048707394343285}
   _missionGoalInfoText: {fileID: 8867867654996921215}
   _missionNameContainer: {fileID: 8812660986898424423}
