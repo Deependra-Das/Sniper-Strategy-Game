@@ -108,6 +108,7 @@ namespace SniperStrategyGame.Gameplay
             RaiseActivateEnemiesEvent();
             RaiseActivatePlayerTeleportAbilityEvent();
             EnablePlayerInput();
+            DisableCursor();
             _canPauseGameplay = true;
             RaiseTogglePauseButtonVisibilityEvent(true);
         }
