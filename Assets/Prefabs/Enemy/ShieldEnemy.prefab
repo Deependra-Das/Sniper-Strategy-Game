@@ -138,7 +138,7 @@ Transform:
   m_GameObject: {fileID: 6259686338954669643}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.1030693, y: 0, z: -5.6300497}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3781,6 +3781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShieldEnemy
   behaviourLoopInterval: 0.1
+  enemyType: 2
   shieldCollider: {fileID: 6684879863873218413}
 --- !u!1 &8720901373227860788
 GameObject:

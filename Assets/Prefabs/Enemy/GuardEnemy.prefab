@@ -350,6 +350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuardEnemy
   behaviourLoopInterval: 0.1
+  enemyType: 0
 --- !u!1 &2333246135483036881
 GameObject:
   m_ObjectHideFlags: 0

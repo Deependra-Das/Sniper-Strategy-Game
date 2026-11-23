@@ -5,6 +5,7 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEditor.EditorGUI;
 
 namespace SniperStrategyGame.Player
 {
@@ -16,19 +17,18 @@ namespace SniperStrategyGame.Player
         [Header("Camera")]
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private CinemachineCamera _playerCamera;
+        [SerializeField] private CinemachineCamera _bulletCamera;
         [SerializeField] private float _scopedFOV;
         [SerializeField] private Transform _cameraPivot;
-        [SerializeField] private float _sensitivityX;
-        [SerializeField] private float _sensitivityY;
-        [SerializeField] private float _minPitch;
-        [SerializeField] private float _maxPitch;
-
-        [Header("Bullet Camera")]
-        [SerializeField] private CinemachineCamera _bulletCamera;
+        [SerializeField] private float _freeLookSensitivityX = 0.1f;
+        [SerializeField] private float _freeLookSensitivityY = 0.1f;
+        [SerializeField] private float _scopedSensitivityX = 0.025f;
+        [SerializeField] private float _scopedSensitivityY = 0.025f;
+        [SerializeField] private float _minPitch = -20f;
+        [SerializeField] private float _maxPitch = 10f;
 
         [Header("Gun")]
         [SerializeField] private Animator _playerGunAnimator;
-        [SerializeField] private GameObject _scopeOverlay;
         [SerializeField] private float _scopeDuration;
 
         [Header("Shooting")]
@@ -37,96 +37,239 @@ namespace SniperStrategyGame.Player
         [SerializeField] private float _bulletSpeed = 50f;
         [SerializeField] private LayerMask _hitMask;
         [SerializeField] private float _boltActionDuration = 1.2f;
+        [SerializeField] private LayerMask _groundMask;
+        [SerializeField] private float _groundSphereCastRadius = 0.5f;
+        private const float _groundRaycastHeight = 10f;
+        private const float _groundRaycastMaxDistance = 100f;
 
-        private InputAction m_lookAction;
-        private InputAction m_scopeAction;
-        private InputAction m_shootAction;
-        private Vector2 m_lookAmt;
+        private Rigidbody _rigidbody;
+        private CapsuleCollider _capsuleCollider;
+
+        private InputActionMap _playerActionMap;
+        private InputAction _lookAction;
+        private InputAction _scopeAction;
+        private InputAction _shootAction;
         private float _yaw;
         private float _pitch;
         private bool _isScoped = false;
         private bool _canShoot = false;
+        private bool _canLook = true;
+        private bool _canTeleport = false;
+        private bool _isPlayerInputEnabled = true;
+        private Coroutine _scopeCoroutine;
         private float _normalFOV;
         private int playerGunLayerMask;
+        private Vector3 _initialPosition;
+        private Quaternion _initialRotation;
+        private Quaternion _initialCameraPivotRotation;
+
         private EventBusService _eventBusServiceObj;
         private BulletService _bulletServiceObj;
 
         private void OnEnable()
         {
-            _inputActionObj.FindActionMap("Player").Enable();
+            EnableInput();
             SubscribeToEvents();
         }
 
         private void OnDisable()
         {
-            _inputActionObj.FindActionMap("Player").Disable();
-            UnsubscribeToEvents();
+            DisableInput();
+            UnsubscribeFromEvents();
         }
 
         protected virtual void SubscribeToEvents()
         {
             _eventBusServiceObj.Subscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Subscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
+            _eventBusServiceObj.Subscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
+            _eventBusServiceObj.Subscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
+            _eventBusServiceObj.Subscribe<ToggleCursorEvent>(OnToggleCursor);
+            _eventBusServiceObj.Subscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
+            _eventBusServiceObj.Subscribe<ResetPlayerEvent>(OnResetPlayer);
         }
 
-        protected virtual void UnsubscribeToEvents()
+        protected virtual void UnsubscribeFromEvents()
         {
             _eventBusServiceObj.Unsubscribe<PlayerBulletHitEnemyEvent>(OnPlayerBulletHitEnemy);
             _eventBusServiceObj.Unsubscribe<PlayerBulletMissedEnemyEvent>(OnPlayerBulletMissedEnemyEvent);
+            _eventBusServiceObj.Unsubscribe<ActivatePlayerTeleportAbilityEvent>(OnActivatePlayerTeleportAbilityEvent);
+            _eventBusServiceObj.Unsubscribe<TogglePlayerInputEvent>(OnTogglePlayerInput);
+            _eventBusServiceObj.Unsubscribe<ToggleCursorEvent>(OnToggleCursor);
+            _eventBusServiceObj.Unsubscribe<TogglePlyerShootAbilityEvent>(OnTogglePlayerShootAbilityEvent);
+            _eventBusServiceObj.Unsubscribe<ResetPlayerEvent>(OnResetPlayer);
         }
 
         private void Awake()
         {
-            m_lookAction = InputSystem.actions.FindAction("Look");
-            m_scopeAction = InputSystem.actions.FindAction("Scope");
-            m_shootAction = InputSystem.actions.FindAction("Shoot");
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+            _initialPosition = transform.position;
+            _initialRotation = transform.rotation;
+            _initialCameraPivotRotation = _cameraPivot.localRotation;
+
+            _rigidbody = GetComponent<Rigidbody>();
+            _capsuleCollider = GetComponent<CapsuleCollider>();
+
+            InitializeInput();
             _eventBusServiceObj = GameManager.Instance.Services.Get<EventBusService>();
             _bulletServiceObj = GameManager.Instance.Services.Get<BulletService>();
+
+            playerGunLayerMask = 1 << LayerMask.NameToLayer("PlayerGun");
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
-        private void Update()
+        private void Start()
         {
-            Look();
-            HandleGunScopeInput();
-            HandleShootingInput();
+            _yaw = transform.eulerAngles.y;
+            _pitch = _cameraPivot.localEulerAngles.x;
+
+            SetPlayerCameraTarget();
+            SetBulletCameraTarget();
+            _normalFOV = _playerCamera.Lens.FieldOfView;
         }
 
-        private void Look()
+        private void SetPlayerCameraTarget()
         {
-            m_lookAmt = m_lookAction.ReadValue<Vector2>();
+            _playerCamera.Follow = _cameraPivot;
+            _playerCamera.LookAt = _cameraPivot;
+        }
 
-            _yaw += m_lookAmt.x * _sensitivityX * Time.deltaTime;
-            _pitch -= m_lookAmt.y * _sensitivityY * Time.deltaTime;
+        private void SetBulletCameraTarget()
+        {
+            _bulletCamera.Follow = _bulletSpawnPoint;
+            _bulletCamera.LookAt = _bulletSpawnPoint;
+            _bulletCamera.transform.position = _bulletSpawnPoint.position;
+            _bulletCamera.transform.rotation = _bulletSpawnPoint.rotation;
+        }
+
+        private void InitializeInput()
+        {
+            _playerActionMap = _inputActionObj.FindActionMap("Player");
+            _lookAction = _playerActionMap.FindAction("Look");
+            _scopeAction = _playerActionMap.FindAction("Scope");
+            _shootAction = _playerActionMap.FindAction("Shoot");
+        }
+
+        private void EnableInput()
+        {
+            _playerActionMap.Enable();
+
+            _lookAction.performed += OnLookPerformed;
+            _scopeAction.performed += OnScopePerformed;
+            _shootAction.performed += OnShootPerformed;
+        }
+
+        private void DisableInput()
+        {
+            _lookAction.performed -= OnLookPerformed;
+            _scopeAction.performed -= OnScopePerformed;
+            _shootAction.performed -= OnShootPerformed;
+
+            _playerActionMap.Disable();
+        }
+
+        private void OnTogglePlayerInput(TogglePlayerInputEvent eventObj)
+        {
+            _isPlayerInputEnabled = eventObj.IsEnabled;
+
+            if (_isPlayerInputEnabled)
+            {
+                _playerActionMap.Enable();
+            }
+            else
+            {
+                _playerActionMap.Disable();
+            }
+        }
+
+        private void OnToggleCursor(ToggleCursorEvent eventObj)
+        {
+            if (eventObj.IsEnabled)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+
+        private void OnLookPerformed(InputAction.CallbackContext context)
+        {
+            if (!_canLook) return;
+
+            Vector2 lookAmount = context.ReadValue<Vector2>();
+            float sensitivityX = _isScoped ? _scopedSensitivityX : _freeLookSensitivityX;
+            float sensitivityY = _isScoped ? _scopedSensitivityY : _freeLookSensitivityY;
+            _yaw += lookAmount.x * sensitivityX;
+            _pitch -= lookAmount.y * sensitivityY;
             _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
 
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
             _cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
 
-        private void HandleGunScopeInput()
+        private void OnScopePerformed(InputAction.CallbackContext context)
         {
-            if (!m_scopeAction.WasPressedThisFrame())
-                return;
+            if (!_isPlayerInputEnabled) return;
 
             if (_isScoped)
-                DisableScope();
+                TryScopeOut();
             else
-                EnableScope();
+                TryScopeIn();
+        }
+
+        private void OnShootPerformed(InputAction.CallbackContext context)
+        {
+            if (!_isPlayerInputEnabled) return;
+            TryShoot();
+        }
+
+        public void TryScopeIn()
+        {
+            if (_isScoped) return;
+
+            EnableScope();
+        }
+
+        public void TryScopeOut()
+        {
+            if (!_isScoped) return;
+
+            DisableScope();
+        }
+
+        public void TryShoot()
+        {
+            if (!_canShoot) return;
+
+            if (!_isScoped) return;
+
+            RaiseTogglePauseButtonVisibilityEvent(false);
+            StartCoroutine(ShootRoutine());
+            RaisePlayerShotEvent();
         }
 
         private void EnableScope()
         {
             _isScoped = true;
             _playerGunAnimator.SetBool("isScoped", _isScoped);
-            StartCoroutine(ActivateScopeRoutine());
+            _scopeCoroutine = StartCoroutine(ActivateScopeRoutine());
         }
 
         private void DisableScope()
         {
             _isScoped = false;
+
+            if (_scopeCoroutine != null)
+            {
+                StopCoroutine(_scopeCoroutine);
+                _scopeCoroutine = null;
+            }
+
             _playerGunAnimator.SetBool("isScoped", _isScoped);
             HandleScopeDeactivation();
         }
@@ -134,39 +277,28 @@ namespace SniperStrategyGame.Player
         private IEnumerator ActivateScopeRoutine()
         {
             yield return new WaitForSeconds(_scopeDuration);
-            _scopeOverlay.SetActive(true);
+
+            if (!_isScoped) yield break;
+
             StopRenderingGun();
-            _normalFOV = _playerCamera.Lens.FieldOfView;
             _playerCamera.Lens.FieldOfView = _scopedFOV;
             _canShoot = true;
+            _eventBusServiceObj.Publish(new PlayerScopeInEvent());
+            _scopeCoroutine = null;
         }
 
         private void HandleScopeDeactivation()
         {
-            _scopeOverlay.SetActive(false);
             RestoreRenderingGun();
             _playerCamera.Lens.FieldOfView = _normalFOV;
             _canShoot = false;
-        }
-
-        private void HandleShootingInput()
-        {
-            if (!_canShoot)
-                return;
-
-            if (!_isScoped)
-                return;
-
-            if (!m_shootAction.WasPressedThisFrame())
-                return;
-
-            StartCoroutine(ShootRoutine());
+            _eventBusServiceObj.Publish(new PlayerScopeOutEvent());
         }
 
         private IEnumerator ShootRoutine()
         {
             _canShoot = false;
-
+            _canLook = false;
             yield return new WaitForSeconds(0.05f);
             DisableScope();
             ShootBullet();
@@ -177,6 +309,7 @@ namespace SniperStrategyGame.Player
         private void ShootBullet()
         {
             _eventBusServiceObj.Publish(new PlayerBulletFiredEvent());
+
             Ray ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
 
             Vector3 targetPoint;
@@ -190,9 +323,7 @@ namespace SniperStrategyGame.Player
                 targetPoint = ray.GetPoint(_range);
             }
 
-            _bulletCamera.gameObject.transform.position = _bulletSpawnPoint.position;
             Vector3 direction = (targetPoint - _bulletSpawnPoint.position);
-            _bulletCamera.transform.rotation = Quaternion.LookRotation(direction.normalized);
             Quaternion rotation = Quaternion.LookRotation(direction.normalized) * Quaternion.Euler(0f, 0f, 90f);
 
             PlayerBullet bullet = _bulletServiceObj.SpawnPlayerBullet(_bulletSpawnPoint.position, rotation);
@@ -201,12 +332,16 @@ namespace SniperStrategyGame.Player
             ActivateBulletCamera(bullet.transform);
         }
 
-        private void ActivateBulletCamera(Transform target)
+        private void ActivateBulletCamera(Transform bullet)
         {
-            StopRenderingGun();
+            if (!_canTeleport)
+            {
+                SetBulletCameraTarget();
+            }
 
-            _bulletCamera.Follow = target;
-            _bulletCamera.LookAt = target;
+            StopRenderingGun();
+            _bulletCamera.Follow = bullet;
+            _bulletCamera.LookAt = bullet;
 
             _playerCamera.Priority = 5;
             _bulletCamera.Priority = 20;
@@ -214,41 +349,52 @@ namespace SniperStrategyGame.Player
 
         private void OnPlayerBulletHitEnemy(PlayerBulletHitEnemyEvent eventObj)
         {
-            TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
-            MovePlayerCamera(eventObj.enemyPosition, eventObj.shotDirection);
+            if (_canTeleport)
+            {
+               TeleportToShotEnemy(eventObj.enemyPosition, eventObj.shotDirection);
+            }
+
             SwitchToPlayerCamera();
             RestoreRenderingGun();
+            _canLook = true;
+            RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
         private void OnPlayerBulletMissedEnemyEvent(PlayerBulletMissedEnemyEvent eventObj)
         {
             SwitchToPlayerCamera();
             RestoreRenderingGun();
+            _canLook = true;
+            RaiseTogglePauseButtonVisibilityEvent(true);
         }
 
-        private void TeleportToShotEnemy(Vector3 position, Vector3 rotation)
+        private void OnActivatePlayerTeleportAbilityEvent(ActivatePlayerTeleportAbilityEvent eventObj)
         {
-            Vector3 newPosition = transform.position;
-            newPosition.x = position.x;
-            newPosition.z = position.z;
+            _canTeleport = true;
+        }
 
-            transform.position = newPosition;
-
-            Vector3 lookDirection = -rotation;
-            lookDirection.y = 0f;
-
-            if (lookDirection != Vector3.zero)
+        private bool TeleportToShotEnemy(Vector3 enemyPosition, Vector3 rotation)
+        {
+            if (!TryGetGroundPosition(enemyPosition, out Vector3 groundPosition))
             {
-                transform.rotation = Quaternion.LookRotation(lookDirection);
-            }         
-        }
+                Debug.LogWarning($"Could not find ground below enemy at {enemyPosition}");
+                return false;
+            }
 
-        private void MovePlayerCamera(Vector3 position, Vector3 rotation)
-        {
-            Vector3 newPosition = _playerCamera.transform.position;
-            newPosition.x = position.x;
-            newPosition.z = position.z;
-            _playerCamera.transform.position = newPosition;
+            float groundOffset = GetGroundOffset();
+
+            Vector3 newPosition = new Vector3( enemyPosition.x, groundPosition.y + groundOffset, enemyPosition.z);
+
+            Vector3 positionDelta = newPosition - _rigidbody.position;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+
+            _rigidbody.position = newPosition;
+            Physics.SyncTransforms();
+
+            _playerCamera.OnTargetObjectWarped(_cameraPivot, positionDelta);
+
+            return true;
         }
 
         private void StopRenderingGun()
@@ -268,6 +414,105 @@ namespace SniperStrategyGame.Player
 
             _bulletCamera.Priority = 5;
             _playerCamera.Priority = 20;
-        }     
+
+            if (_canTeleport)
+            {
+                StartCoroutine(ResetBulletCameraNextFrame());
+            }
+        }
+
+        private IEnumerator ResetBulletCameraNextFrame()
+        {
+            yield return null;
+            SetBulletCameraTarget();
+        }
+
+        private float GetGroundOffset()
+        {
+            float halfHeight = _capsuleCollider.height * 0.5f;
+            return halfHeight - _capsuleCollider.radius - _capsuleCollider.center.y;
+        }
+
+        private bool TryGetGroundPosition(Vector3 worldPosition, out Vector3 groundPosition)
+        {
+            Vector3 sphereOrigin = worldPosition + Vector3.up * _groundRaycastHeight;
+
+            if (Physics.SphereCast( sphereOrigin, _groundSphereCastRadius, Vector3.down, out RaycastHit hit, _groundRaycastMaxDistance, _groundMask, QueryTriggerInteraction.Ignore))
+            {
+                groundPosition = hit.point;
+                return true;
+            }
+
+            groundPosition = default;
+            return false;
+        }
+
+        private void OnTogglePlayerShootAbilityEvent(TogglePlyerShootAbilityEvent eventObj)
+        {
+            _canShoot = eventObj.IsEnabled;
+        }
+
+        private void OnResetPlayer(ResetPlayerEvent eventObj)
+        {
+            ResetPlayer();
+        }
+
+        private void ResetPlayer()
+        {
+            StopAllCoroutines();
+            _scopeCoroutine = null;
+
+            if (!TryGetGroundPosition(_initialPosition, out Vector3 groundPosition))
+            {
+                Debug.LogWarning($"Could not find ground below enemy at {_initialPosition}");
+            }
+
+            float groundOffset = GetGroundOffset();
+            Vector3 newPosition = new Vector3(_initialPosition.x, groundPosition.y + groundOffset, _initialPosition.z);
+            Vector3 positionDelta = newPosition - _rigidbody.position;
+
+            if (_rigidbody != null)
+            {
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+                _rigidbody.position = newPosition;
+                _rigidbody.rotation = _initialRotation;     
+            }
+
+            transform.rotation = _initialRotation;
+            _cameraPivot.localRotation = _initialCameraPivotRotation;
+            Physics.SyncTransforms();
+            _playerCamera.OnTargetObjectWarped(_cameraPivot, positionDelta);
+
+            _yaw = _initialRotation.eulerAngles.y;
+            _pitch = _initialCameraPivotRotation.eulerAngles.x;
+
+            if (_pitch > 180f)
+                _pitch -= 360f;
+
+            DisableScope();
+            _canShoot = false;
+            _canLook = true;
+            _canTeleport = false;
+
+            _playerCamera.Priority = 20;
+            _bulletCamera.Priority = 5;
+
+            _bulletCamera.Follow = _bulletSpawnPoint;
+            _bulletCamera.LookAt = _bulletSpawnPoint;
+
+            SetBulletCameraTarget();
+            RestoreRenderingGun();
+        }
+
+        private void RaisePlayerShotEvent() 
+        {
+            _eventBusServiceObj.Publish(new PlayerShotEvent());
+        }
+
+        private void RaiseTogglePauseButtonVisibilityEvent(bool value)
+        {
+            _eventBusServiceObj.Publish(new TogglePauseButtonVisibilityEvent(value));
+        }
     }
 }

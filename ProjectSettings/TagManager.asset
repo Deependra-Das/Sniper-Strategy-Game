@@ -17,8 +17,8 @@ TagManager:
   - Enemy
   - EnemyShield
   - NavMeshGeometry
-  - 
-  - 
+  - WorldBounds
+  - Player
   - 
   - 
   - 

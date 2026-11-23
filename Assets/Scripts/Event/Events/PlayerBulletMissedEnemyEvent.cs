@@ -1,3 +1,6 @@
 using UnityEngine;
 
-public class PlayerBulletMissedEnemyEvent { }
+namespace SniperStrategyGame.Event
+{
+    public class PlayerBulletMissedEnemyEvent { }
+}

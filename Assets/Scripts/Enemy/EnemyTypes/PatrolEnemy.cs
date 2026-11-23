@@ -18,12 +18,15 @@ namespace SniperStrategyGame.Enemy
         {
             base.ActivateEnemy();
 
-            if (_patrolPath != null)
-                agent.destination = _patrolPath.GetNextWayPoint();
+            if (_patrolPath == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
+            agent.destination = _patrolPath.GetNextWayPoint();
         }
 
         protected override void ExecuteBehaviour()
         {
+            if (_patrolPath == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
             if (agent.remainingDistance <= 0.1f)
             {
                 _timer += behaviourLoopInterval;
@@ -41,6 +44,11 @@ namespace SniperStrategyGame.Enemy
 
             float normalizedSpeed = Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude);
             animator.SetFloat("Speed", normalizedSpeed);
+        }
+
+        public void ResetPatrolPath()
+        {
+            _patrolPath?.ResetPath();
         }
     }
 }

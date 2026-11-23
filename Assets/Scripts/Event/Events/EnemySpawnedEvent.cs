@@ -1,6 +1,7 @@
 using UnityEngine;
+using SniperStrategyGame.Enemy;
 
-namespace SniperStrategyGame.Enemy
+namespace SniperStrategyGame.Event
 {
     public struct EnemySpawnedEvent
     {
