@@ -45,5 +45,10 @@ namespace SniperStrategyGame.Enemy
             float normalizedSpeed = Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude);
             animator.SetFloat("Speed", normalizedSpeed);
         }
+
+        public void ResetPatrolPath()
+        {
+            _patrolPath?.ResetPath();
+        }
     }
 }

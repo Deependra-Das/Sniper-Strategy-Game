@@ -3,7 +3,6 @@ using SniperStrategyGame.Event;
 using SniperStrategyGame.Main;
 using SniperStrategyGame.Path;
 using SniperStrategyGame.SceneLoader;
-using SniperStrategyGame.Tutorial;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -196,6 +195,11 @@ namespace SniperStrategyGame.Gameplay
 
             if (!_aliveEnemies.Remove(eventObj.Enemy))
                 return;
+
+            if (eventObj.Enemy is PatrolEnemy patrolEnemy)
+            {
+                patrolEnemy.ResetPatrolPath();
+            }
 
             Destroy(eventObj.Enemy.gameObject);
             RaiseUpdateMissionInfoEvent(GetUpdatedMissionInfoText(), _missionGoalData_SO.missionGoalInfo);

@@ -477,6 +477,12 @@ namespace SniperStrategyGame.Tutorial
         {
             _currentStepEnemies.Remove(enemy);
             _allSpawnedEnemies.Remove(enemy);
+
+            if (enemy is PatrolEnemy patrolEnemy)
+            {
+                patrolEnemy.ResetPatrolPath();
+            }
+
             Destroy(enemy.gameObject);
         }
 

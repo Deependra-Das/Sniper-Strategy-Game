@@ -63,6 +63,12 @@ namespace SniperStrategyGame.Path
             return _index;
         }
 
+        public void ResetPath()
+        {
+            _index = 0;
+            _direction = Forward;
+        }
+
         private void OnDrawGizmos()
         {
             if (_wayPoints == null || _wayPoints.Length == 0) return;
